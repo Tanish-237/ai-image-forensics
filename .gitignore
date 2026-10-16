@@ -1,0 +1,29 @@
+# Data stays on Google Drive / Hugging Face, never in git
+data/
+data_clean/
+*.heic
+*.HEIC
+hf_cache/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.ipynb_checkpoints/
+
+# LaTeX build files (thesis.pdf is kept)
+report/*.aux
+report/*.log
+report/*.bbl
+report/*.blg
+report/*.toc
+report/*.lof
+report/*.lot
+report/*.out
+report/*.synctex.gz
+report/*.fls
+report/*.fdb_latexmk
+
+# OS / editor
+.DS_Store
+*~
