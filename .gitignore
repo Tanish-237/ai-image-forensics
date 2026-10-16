@@ -27,3 +27,6 @@ report/*.fdb_latexmk
 # OS / editor
 .DS_Store
 *~
+
+# Personal notes, not part of the project repo
+private/

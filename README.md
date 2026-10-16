@@ -1,6 +1,6 @@
 # Detecting and Attributing AI-Generated Images
 
-**B.Tech VII Semester Mini Project · CSE Department, MNNIT Allahabad · 2026–27**
+**B.Tech VII Semester Mini Project, CSE Department, MNNIT Allahabad (2026-27)**
 **Mentor:** Dr. Anuja Dixit
 **Team (Group 9):** Tanish Mittal (20233288), Vanshika Gautam (20233305), Shashank Kanaujiya (20233259), Utkarsh Raj Singh (20233298), Ashish Meena (20223058)
 
@@ -42,8 +42,8 @@ Raw data is **not** stored in this repo. Pilot images live on Google Drive (`MyD
 
 ## Running the notebooks
 
-1. Open a notebook in Google Colab: **File → Open notebook → GitHub**, then paste this repo's URL.
-2. Go to **Runtime → Change runtime type → T4 GPU**.
+1. Open a notebook in Google Colab: **File > Open notebook > GitHub**, then paste this repo's URL.
+2. Go to **Runtime > Change runtime type > T4 GPU**.
 3. Run the cells from top to bottom.
 
 ## Building the report
