@@ -161,9 +161,40 @@ application are produced.
 \section{Dataset}
 We use Tiny GenImage~\cite{tinygenimage}, a scaled-down version of
 GenImage with 28{,}000 training and 7{,}000 validation images. Each
-image is labelled as real or fake and with its source: Real, ADM,
-BigGAN, GLIDE, Midjourney, SD14, SD15, VQDM or Wukong.
-% TODO: insert inventory results (counts, formats, sizes per generator).
+image is labelled as real or fake and with the model that produced it.
+The dataset description lists eight generators, but our inventory found
+no images from SD14; the seven generators present are ADM, BigGAN,
+GLIDE, Midjourney, SD15, VQDM and Wukong. Real images come from
+ImageNet. Table~\ref{tab:inventory} summarises the inventory.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lrrlrr}
+\toprule
+\textbf{Source} & \textbf{Train} & \textbf{Val.} & \textbf{Format} & \textbf{Median size (px)} & \textbf{Median file (KB)}\\
+\midrule
+Real (ImageNet) & 14{,}000 & 3{,}500 & JPEG & $500\times375$ & 109\\
+ADM        & 2{,}000 & 500 & PNG & $256\times256$ & 117\\
+BigGAN     & 2{,}000 & 500 & PNG & $128\times128$ & 29\\
+GLIDE      & 2{,}000 & 500 & PNG & $256\times256$ & 75\\
+Midjourney & 2{,}000 & 500 & PNG & $1024\times1024$ & 1{,}211\\
+SD15       & 2{,}000 & 500 & PNG & $512\times512$ & 448\\
+VQDM       & 2{,}000 & 500 & PNG & $256\times256$ & 109\\
+Wukong     & 2{,}000 & 500 & PNG & $512\times512$ & 454\\
+\bottomrule
+\end{tabular}
+\caption{Inventory of Tiny GenImage.}
+\label{tab:inventory}
+\end{table}
+
+The two classes are balanced (14{,}000 real and 14{,}000 generated
+training images), but the dataset carries the same shortcuts found in our
+pilot study. Every real image is a JPEG and every generated image is a
+PNG, so the rule ``PNG means fake'' labels all 35{,}000 images correctly.
+Image size is also tied to the source: each generator produces a fixed
+resolution, so size alone separates BigGAN, Midjourney and the real
+images from the rest.
 
 \section{Bias Control}
 \begin{itemize}
