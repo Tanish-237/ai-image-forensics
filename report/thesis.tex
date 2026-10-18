@@ -90,13 +90,19 @@ RQ4 & Can it identify \emph{which} generator produced an image? & Camera model i
 
 \section{Contributions}
 \begin{itemize}
-  \item A bias-controlled evaluation in which real and AI images are
-        matched in file format, resolution and metadata.
-  \item A comparison of a trained CNN detector with a detector built on
-        frozen CLIP features, across known and unseen generators.
-  \item A robustness study under common image processing.
-  \item A test on recent generator output (ChatGPT) that the source
-        dataset does not contain.
+  \item A de-biasing procedure for Tiny GenImage that matches real and
+        generated images in format, resolution, colour mode and JPEG
+        compression, including quality-factor matching and
+        grid-aligned cropping.
+  \item A measurement of shortcut learning: the same detector trained on
+        the original (biased) and on the de-biased data, evaluated on the
+        same test set.
+  \item A comparison of a fine-tuned CNN detector with a detector built on
+        frozen CLIP features, on known and unseen generators and under
+        common image processing.
+  \item Two new test sets collected by us: images from a current
+        generator (ChatGPT) with matching real photographs, and the same
+        images after sharing through WhatsApp.
   \item A demo application in which users upload an image and see the
         detector's prediction.
 \end{itemize}
@@ -377,6 +383,14 @@ compression, while AI pixels did not.
 
 \section{Generator Attribution (E4)}
 % TODO
+\textit{To be completed.}
+
+\section{Effect of De-biasing (E5)}
+% TODO: same model trained on biased vs de-biased data, tested on the de-biased test set.
+\textit{To be completed.}
+
+\section{Current Generator and Real-World Sharing (E6)}
+% TODO: ChatGPT images + iPhone photos, before and after WhatsApp sharing.
 \textit{To be completed.}
 
 % ==================================================================
