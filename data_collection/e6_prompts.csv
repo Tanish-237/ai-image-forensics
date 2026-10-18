@@ -1,0 +1,101 @@
+id,category,subject,prompt,file_stem
+1,home,a coffee mug on a wooden table,"A realistic photo of a coffee mug on a wooden table, taken with a phone camera, natural lighting, no text.",001_coffee_mug_on_a_wooden_table
+2,home,an open laptop on a desk,"A realistic photo of an open laptop on a desk, taken with a phone camera, natural lighting, no text.",002_open_laptop_on_a_desk
+3,home,a potted plant on a windowsill,"A realistic photo of a potted plant on a windowsill, taken with a phone camera, natural lighting, no text.",003_potted_plant_on_a_windowsill
+4,home,a pair of sneakers on the floor,"A realistic photo of a pair of sneakers on the floor, taken with a phone camera, natural lighting, no text.",004_pair_of_sneakers_on_the_floor
+5,home,a backpack on a chair,"A realistic photo of a backpack on a chair, taken with a phone camera, natural lighting, no text.",005_backpack_on_a_chair
+6,home,a wall clock,"A realistic photo of a wall clock, taken with a phone camera, natural lighting, no text.",006_wall_clock
+7,home,a ceiling fan,"A realistic photo of a ceiling fan, taken with a phone camera, natural lighting, no text.",007_ceiling_fan
+8,home,headphones on a desk,"A realistic photo of headphones on a desk, taken with a phone camera, natural lighting, no text.",008_headphones_on_a_desk
+9,home,keys and a wallet on a table,"A realistic photo of keys and a wallet on a table, taken with a phone camera, natural lighting, no text.",009_keys_and_a_wallet_on_a_table
+10,home,a notebook and a pen,"A realistic photo of a notebook and a pen, taken with a phone camera, natural lighting, no text.",010_notebook_and_a_pen
+11,home,a stack of books,"A realistic photo of a stack of books, taken with a phone camera, natural lighting, no text.",011_stack_of_books
+12,home,a steel water bottle on a desk,"A realistic photo of a steel water bottle on a desk, taken with a phone camera, natural lighting, no text.",012_steel_water_bottle_on_a_desk
+13,home,a mobile phone charging on a table,"A realistic photo of a mobile phone charging on a table, taken with a phone camera, natural lighting, no text.",013_mobile_phone_charging_on_a_table
+14,home,a table lamp,"A realistic photo of a table lamp, taken with a phone camera, natural lighting, no text.",014_table_lamp
+15,home,a computer mouse next to a keyboard,"A realistic photo of a computer mouse next to a keyboard, taken with a phone camera, natural lighting, no text.",015_computer_mouse_next_to_a_keyboard
+16,home,a pair of glasses on a book,"A realistic photo of a pair of glasses on a book, taken with a phone camera, natural lighting, no text.",016_pair_of_glasses_on_a_book
+17,home,a wristwatch on a table,"A realistic photo of a wristwatch on a table, taken with a phone camera, natural lighting, no text.",017_wristwatch_on_a_table
+18,home,a toothbrush in a cup,"A realistic photo of a toothbrush in a cup, taken with a phone camera, natural lighting, no text.",018_toothbrush_in_a_cup
+19,home,a plastic bucket in a bathroom,"A realistic photo of a plastic bucket in a bathroom, taken with a phone camera, natural lighting, no text.",019_plastic_bucket_in_a_bathroom
+20,home,folded clothes on a bed,"A realistic photo of folded clothes on a bed, taken with a phone camera, natural lighting, no text.",020_folded_clothes_on_a_bed
+21,home,a pillow on a bed,"A realistic photo of a pillow on a bed, taken with a phone camera, natural lighting, no text.",021_pillow_on_a_bed
+22,home,an electric kettle,"A realistic photo of an electric kettle, taken with a phone camera, natural lighting, no text.",022_electric_kettle
+23,home,a door handle,"A realistic photo of a door handle, taken with a phone camera, natural lighting, no text.",023_door_handle
+24,home,a window with curtains,"A realistic photo of a window with curtains, taken with a phone camera, natural lighting, no text.",024_window_with_curtains
+25,home,slippers near a door,"A realistic photo of slippers near a door, taken with a phone camera, natural lighting, no text.",025_slippers_near_a_door
+26,home,a mirror on a wall,"A realistic photo of a mirror on a wall, taken with a phone camera, natural lighting, no text.",026_mirror_on_a_wall
+27,home,an extension board with plugs,"A realistic photo of an extension board with plugs, taken with a phone camera, natural lighting, no text.",027_extension_board_with_plugs
+28,home,a pressure cooker on a stove,"A realistic photo of a pressure cooker on a stove, taken with a phone camera, natural lighting, no text.",028_pressure_cooker_on_a_stove
+29,home,a steel plate and spoon,"A realistic photo of a steel plate and spoon, taken with a phone camera, natural lighting, no text.",029_steel_plate_and_spoon
+30,home,an umbrella leaning against a wall,"A realistic photo of an umbrella leaning against a wall, taken with a phone camera, natural lighting, no text.",030_umbrella_leaning_against_a_wall
+31,home,a plastic chair,"A realistic photo of a plastic chair, taken with a phone camera, natural lighting, no text.",031_plastic_chair
+32,home,a calculator on a desk,"A realistic photo of a calculator on a desk, taken with a phone camera, natural lighting, no text.",032_calculator_on_a_desk
+33,home,a pen stand with pens,"A realistic photo of a pen stand with pens, taken with a phone camera, natural lighting, no text.",033_pen_stand_with_pens
+34,home,clothes drying on a line,"A realistic photo of clothes drying on a line, taken with a phone camera, natural lighting, no text.",034_clothes_drying_on_a_line
+35,home,a broom in a corner,"A realistic photo of a broom in a corner, taken with a phone camera, natural lighting, no text.",035_broom_in_a_corner
+36,food,a plate of rice and dal,"A realistic photo of a plate of rice and dal, taken with a phone camera, natural lighting, no text.",036_plate_of_rice_and_dal
+37,food,a cup of tea,"A realistic photo of a cup of tea, taken with a phone camera, natural lighting, no text.",037_cup_of_tea
+38,food,a bowl of fruit,"A realistic photo of a bowl of fruit, taken with a phone camera, natural lighting, no text.",038_bowl_of_fruit
+39,food,a bunch of bananas,"A realistic photo of a bunch of bananas, taken with a phone camera, natural lighting, no text.",039_bunch_of_bananas
+40,food,a samosa on a plate,"A realistic photo of a samosa on a plate, taken with a phone camera, natural lighting, no text.",040_samosa_on_a_plate
+41,food,a glass of water,"A realistic photo of a glass of water, taken with a phone camera, natural lighting, no text.",041_glass_of_water
+42,food,a slice of pizza,"A realistic photo of a slice of pizza, taken with a phone camera, natural lighting, no text.",042_slice_of_pizza
+43,food,an apple on a table,"A realistic photo of an apple on a table, taken with a phone camera, natural lighting, no text.",043_apple_on_a_table
+44,food,a plate of biscuits,"A realistic photo of a plate of biscuits, taken with a phone camera, natural lighting, no text.",044_plate_of_biscuits
+45,food,a bowl of noodles,"A realistic photo of a bowl of noodles, taken with a phone camera, natural lighting, no text.",045_bowl_of_noodles
+46,food,a paratha on a plate,"A realistic photo of a paratha on a plate, taken with a phone camera, natural lighting, no text.",046_paratha_on_a_plate
+47,food,a cup of coffee,"A realistic photo of a cup of coffee, taken with a phone camera, natural lighting, no text.",047_cup_of_coffee
+48,food,a plate of poha,"A realistic photo of a plate of poha, taken with a phone camera, natural lighting, no text.",048_plate_of_poha
+49,food,a bowl of curd,"A realistic photo of a bowl of curd, taken with a phone camera, natural lighting, no text.",049_bowl_of_curd
+50,food,oranges in a basket,"A realistic photo of oranges in a basket, taken with a phone camera, natural lighting, no text.",050_oranges_in_a_basket
+51,food,idli with chutney,"A realistic photo of idli with chutney, taken with a phone camera, natural lighting, no text.",051_idli_with_chutney
+52,food,an ice cream cone,"A realistic photo of an ice cream cone, taken with a phone camera, natural lighting, no text.",052_ice_cream_cone
+53,food,a plate of momos,"A realistic photo of a plate of momos, taken with a phone camera, natural lighting, no text.",053_plate_of_momos
+54,food,a boiled egg on a plate,"A realistic photo of a boiled egg on a plate, taken with a phone camera, natural lighting, no text.",054_boiled_egg_on_a_plate
+55,food,a bowl of salad,"A realistic photo of a bowl of salad, taken with a phone camera, natural lighting, no text.",055_bowl_of_salad
+56,outdoors,a parked scooter,"A realistic photo of a parked scooter, taken with a phone camera, natural lighting, no text.",056_parked_scooter
+57,outdoors,a bicycle leaning against a wall,"A realistic photo of a bicycle leaning against a wall, taken with a phone camera, natural lighting, no text.",057_bicycle_leaning_against_a_wall
+58,outdoors,an auto-rickshaw on a road,"A realistic photo of an auto-rickshaw on a road, taken with a phone camera, natural lighting, no text.",058_auto_rickshaw_on_a_road
+59,outdoors,a car parked on a street,"A realistic photo of a car parked on a street, taken with a phone camera, natural lighting, no text.",059_car_parked_on_a_street
+60,outdoors,a motorcycle parked on a road,"A realistic photo of a motorcycle parked on a road, taken with a phone camera, natural lighting, no text.",060_motorcycle_parked_on_a_road
+61,outdoors,a tree beside a road,"A realistic photo of a tree beside a road, taken with a phone camera, natural lighting, no text.",061_tree_beside_a_road
+62,outdoors,a building entrance,"A realistic photo of a building entrance, taken with a phone camera, natural lighting, no text.",062_building_entrance
+63,outdoors,a concrete staircase,"A realistic photo of a concrete staircase, taken with a phone camera, natural lighting, no text.",063_concrete_staircase
+64,outdoors,a classroom bench,"A realistic photo of a classroom bench, taken with a phone camera, natural lighting, no text.",064_classroom_bench
+65,outdoors,an empty whiteboard in a classroom,"A realistic photo of an empty whiteboard in a classroom, taken with a phone camera, natural lighting, no text.",065_empty_whiteboard_in_a_classroom
+66,outdoors,an empty corridor,"A realistic photo of an empty corridor, taken with a phone camera, natural lighting, no text.",066_empty_corridor
+67,outdoors,a library bookshelf,"A realistic photo of a library bookshelf, taken with a phone camera, natural lighting, no text.",067_library_bookshelf
+68,outdoors,clouds in the sky,"A realistic photo of clouds in the sky, taken with a phone camera, natural lighting, no text.",068_clouds_in_the_sky
+69,outdoors,a sunset over buildings,"A realistic photo of a sunset over buildings, taken with a phone camera, natural lighting, no text.",069_sunset_over_buildings
+70,outdoors,flowers in a garden,"A realistic photo of flowers in a garden, taken with a phone camera, natural lighting, no text.",070_flowers_in_a_garden
+71,outdoors,a grass lawn,"A realistic photo of a grass lawn, taken with a phone camera, natural lighting, no text.",071_grass_lawn
+72,outdoors,a street lamp,"A realistic photo of a street lamp, taken with a phone camera, natural lighting, no text.",072_street_lamp
+73,outdoors,a road with traffic,"A realistic photo of a road with traffic, taken with a phone camera, natural lighting, no text.",073_road_with_traffic
+74,outdoors,a fruit cart on a street,"A realistic photo of a fruit cart on a street, taken with a phone camera, natural lighting, no text.",074_fruit_cart_on_a_street
+75,outdoors,a water tank on a rooftop,"A realistic photo of a water tank on a rooftop, taken with a phone camera, natural lighting, no text.",075_water_tank_on_a_rooftop
+76,outdoors,a brick wall,"A realistic photo of a brick wall, taken with a phone camera, natural lighting, no text.",076_brick_wall
+77,outdoors,a metal gate,"A realistic photo of a metal gate, taken with a phone camera, natural lighting, no text.",077_metal_gate
+78,outdoors,a bench in a park,"A realistic photo of a bench in a park, taken with a phone camera, natural lighting, no text.",078_bench_in_a_park
+79,outdoors,a manhole cover on a road,"A realistic photo of a manhole cover on a road, taken with a phone camera, natural lighting, no text.",079_manhole_cover_on_a_road
+80,outdoors,a parking lot with motorcycles,"A realistic photo of a parking lot with motorcycles, taken with a phone camera, natural lighting, no text.",080_parking_lot_with_motorcycles
+81,outdoors,a puddle on a road,"A realistic photo of a puddle on a road, taken with a phone camera, natural lighting, no text.",081_puddle_on_a_road
+82,outdoors,a dustbin on a street,"A realistic photo of a dustbin on a street, taken with a phone camera, natural lighting, no text.",082_dustbin_on_a_street
+83,outdoors,an electric pole with wires,"A realistic photo of an electric pole with wires, taken with a phone camera, natural lighting, no text.",083_electric_pole_with_wires
+84,outdoors,a helmet on a motorcycle seat,"A realistic photo of a helmet on a motorcycle seat, taken with a phone camera, natural lighting, no text.",084_helmet_on_a_motorcycle_seat
+85,outdoors,a rooftop view of a neighbourhood,"A realistic photo of a rooftop view of a neighbourhood, taken with a phone camera, natural lighting, no text.",085_rooftop_view_of_a_neighbourhood
+86,animals,a street dog sleeping,"A realistic photo of a street dog sleeping, taken with a phone camera, natural lighting, no text.",086_street_dog_sleeping
+87,animals,a cat sitting on a wall,"A realistic photo of a cat sitting on a wall, taken with a phone camera, natural lighting, no text.",087_cat_sitting_on_a_wall
+88,animals,a pigeon on a ledge,"A realistic photo of a pigeon on a ledge, taken with a phone camera, natural lighting, no text.",088_pigeon_on_a_ledge
+89,animals,a cow on a street,"A realistic photo of a cow on a street, taken with a phone camera, natural lighting, no text.",089_cow_on_a_street
+90,animals,a crow on a wire,"A realistic photo of a crow on a wire, taken with a phone camera, natural lighting, no text.",090_crow_on_a_wire
+91,animals,a squirrel on a tree,"A realistic photo of a squirrel on a tree, taken with a phone camera, natural lighting, no text.",091_squirrel_on_a_tree
+92,animals,a goat on a street,"A realistic photo of a goat on a street, taken with a phone camera, natural lighting, no text.",092_goat_on_a_street
+93,animals,a sparrow on a branch,"A realistic photo of a sparrow on a branch, taken with a phone camera, natural lighting, no text.",093_sparrow_on_a_branch
+94,animals,a butterfly on a flower,"A realistic photo of a butterfly on a flower, taken with a phone camera, natural lighting, no text.",094_butterfly_on_a_flower
+95,animals,a monkey on a wall,"A realistic photo of a monkey on a wall, taken with a phone camera, natural lighting, no text.",095_monkey_on_a_wall
+96,animals,a dog in a park,"A realistic photo of a dog in a park, taken with a phone camera, natural lighting, no text.",096_dog_in_a_park
+97,animals,ducks in a pond,"A realistic photo of ducks in a pond, taken with a phone camera, natural lighting, no text.",097_ducks_in_a_pond
+98,animals,a lizard on a wall,"A realistic photo of a lizard on a wall, taken with a phone camera, natural lighting, no text.",098_lizard_on_a_wall
+99,animals,a cat on a bed,"A realistic photo of a cat on a bed, taken with a phone camera, natural lighting, no text.",099_cat_on_a_bed
+100,animals,pigeons on a rooftop,"A realistic photo of pigeons on a rooftop, taken with a phone camera, natural lighting, no text.",100_pigeons_on_a_rooftop
