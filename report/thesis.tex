@@ -317,10 +317,38 @@ detector trained on raw pixels (2020), a detector built on a large
 pre-trained vision model (2023), and a detector built on a forensic
 residual (2024).
 
+\section{Training Procedure}
+All trained detectors share one training procedure. Images are scaled
+to $[0,1]$, normalised with the ImageNet channel means and standard
+deviations, and flipped horizontally at random during training. The
+network outputs a single score per image, which is passed through a
+sigmoid to give the probability that the image is generated. Training
+minimises the binary cross-entropy loss with the AdamW optimiser
+(learning rate $10^{-4}$, weight decay $10^{-4}$), batches of 64 images,
+mixed-precision arithmetic and a fixed random seed (42), for 5 epochs.
+After every epoch the model is evaluated on the validation set, and the
+checkpoint with the lowest validation loss is kept. The test set is used
+once, with that checkpoint.
+
 \section{Evaluation Protocol}
-% TODO: define metrics (accuracy, AUC, AP, per-class accuracy) when introduced.
-Results are reported per generator and per processing condition, not
-only as one overall number, and misclassified images are inspected.
+We report four measures on the test set:
+\begin{itemize}
+  \item \textbf{Accuracy:} the fraction of images classified correctly
+        when an image is called generated if its probability is at least
+        0.5.
+  \item \textbf{ROC-AUC:} the probability that a randomly chosen
+        generated image receives a higher score than a randomly chosen
+        real image. It does not depend on the 0.5 threshold, so it
+        separates how well a detector ranks images from where its
+        threshold lies.
+  \item \textbf{Average precision (AP):} the area under the
+        precision--recall curve, commonly reported in the detection
+        literature.
+  \item \textbf{Per-source accuracy:} accuracy computed separately for
+        real images and for each generator, so that a weak generator is
+        not hidden by the overall average.
+\end{itemize}
+Misclassified images are inspected in the error analysis.
 
 % ==================================================================
 \chapter{Experimental Setup and Results Analysis}
@@ -400,8 +428,62 @@ close-up textures, while AI images show centred, well-lit whole scenes
 compression, while AI pixels did not.
 
 \section{Real versus AI Detection (E1)}
-% TODO
-\textit{To be completed.}
+E1 trains each detector on all six generators and tests it on the
+held-out test set of the same generators.
+
+\subsection*{M1: fine-tuned ResNet-50}
+On the test set, M1 reached an accuracy of 96.5\%, a ROC-AUC of 0.994
+and an AP of 0.994 (Table~\ref{tab:e1}). Training took about 71 seconds
+per epoch on a T4 GPU.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Method} & \textbf{Accuracy} & \textbf{ROC-AUC} & \textbf{AP} & \textbf{Test loss}\\
+\midrule
+M1 (ResNet-50) & 0.965 & 0.994 & 0.994 & 0.104\\
+% M2, M3, M4 rows to be added
+\bottomrule
+\end{tabular}
+\caption{E1: test results on the six training generators.}
+\label{tab:e1}
+\end{table}
+
+Accuracy differs between sources. Real images were classified correctly
+97.2\% of the time. Among the generators, GLIDE (99.6\%) and SD15 (98.2\%)
+were the easiest to detect, while ADM (91.6\%) and Midjourney (93.6\%)
+were the hardest (Table~\ref{tab:e1-source}).
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lccccccc}
+\toprule
+ & \textbf{Real} & \textbf{ADM} & \textbf{GLIDE} & \textbf{MJ} & \textbf{SD15} & \textbf{VQDM} & \textbf{Wukong}\\
+\midrule
+M1 & 0.972 & 0.916 & 0.996 & 0.936 & 0.982 & 0.970 & 0.954\\
+\bottomrule
+\end{tabular}
+\caption{E1: per-source test accuracy (for Real, images correctly called real; for generators, images correctly called generated).}
+\label{tab:e1-source}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/m1_resnet50_curves.png}
+\caption{M1 training curves. Training loss keeps falling while validation loss stays near 0.13, a sign of over-fitting after the first epoch.}
+\label{fig:m1-curves}
+\end{figure}
+
+Figure~\ref{fig:m1-curves} shows that the training loss fell from 0.25 to
+0.03 over five epochs while the validation loss stayed between 0.12 and
+0.15. The network continued to fit the training images more closely
+without improving on unseen ones, so most of what it learned in later
+epochs did not generalise. Keeping the checkpoint with the lowest
+validation loss (epoch 4) guards against this.
+% TODO: add M2, M3, M4 and a comparison paragraph.
 
 \section{Generalization to Unseen Generators (E2)}
 % TODO
