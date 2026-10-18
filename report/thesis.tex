@@ -446,7 +446,8 @@ per epoch on a T4 GPU.
 \textbf{Method} & \textbf{Accuracy} & \textbf{ROC-AUC} & \textbf{AP} & \textbf{Test loss}\\
 \midrule
 M1 (ResNet-50) & 0.965 & 0.994 & 0.994 & 0.104\\
-% M2, M3, M4 rows to be added
+M2 (CLIP + logistic regression) & 0.975 & 0.997 & 0.996 & 0.069\\
+% M3, M4 rows to be added
 \bottomrule
 \end{tabular}
 \caption{E1: test results on the six training generators.}
@@ -466,6 +467,7 @@ were the hardest (Table~\ref{tab:e1-source}).
  & \textbf{Real} & \textbf{ADM} & \textbf{GLIDE} & \textbf{MJ} & \textbf{SD15} & \textbf{VQDM} & \textbf{Wukong}\\
 \midrule
 M1 & 0.972 & 0.916 & 0.996 & 0.936 & 0.982 & 0.970 & 0.954\\
+M2 & 0.978 & 0.944 & 0.992 & 0.978 & 0.978 & 0.974 & 0.968\\
 \bottomrule
 \end{tabular}
 \caption{E1: per-source test accuracy (for Real, images correctly called real; for generators, images correctly called generated).}
@@ -485,7 +487,26 @@ Figure~\ref{fig:m1-curves} shows that the training loss fell from 0.25 to
 without improving on unseen ones, so most of what it learned in later
 epochs did not generalise. Keeping the checkpoint with the lowest
 validation loss (epoch 4) guards against this.
-% TODO: add M2, M3, M4 and a comparison paragraph.
+
+\subsection*{M2: frozen CLIP features with logistic regression}
+The CLIP ViT-L/14 image encoder (304 million parameters) was kept frozen,
+and each image was represented by its 768-dimensional, L2-normalised
+image embedding. A logistic-regression classifier was trained on these
+embeddings, with its regularisation strength $C$ chosen from
+$\{0.01, 0.1, 1, 10, 100\}$ by validation loss. The best value was
+$C = 100$, although $C = 10$ was almost as good (validation loss 0.082
+against 0.081). The trained classifier has only 769 parameters.
+
+M2 reached a test accuracy of 97.5\%, a ROC-AUC of 0.997 and an AP of
+0.996, slightly above M1 on every measure (Table~\ref{tab:e1}). It was
+also more even across sources: its lowest per-source accuracy was 94.4\%
+(ADM), against 91.6\% for M1, and its accuracy on Midjourney images rose
+from 93.6\% to 97.8\%. A frozen general-purpose representation with a
+linear classifier of 769 parameters therefore matched and slightly
+exceeded a fully fine-tuned network with about 23.5 million trainable
+parameters on the generators seen during training. ADM was the hardest
+generator for both methods.
+% TODO: add M3, M4 and a comparison paragraph.
 
 \section{Generalization to Unseen Generators (E2)}
 % TODO
