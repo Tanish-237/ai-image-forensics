@@ -197,20 +197,79 @@ resolution, so size alone separates BigGAN, Midjourney and the real
 images from the rest.
 
 \section{Bias Control}
-\begin{itemize}
-  \item \textbf{Format and metadata:} every image is decoded to raw
-        pixels and rebuilt, which removes EXIF, colour profiles and any
-        other embedded data.
-  \item \textbf{Resolution:} images are center-cropped to a common size.
-        Cropping is preferred to resizing because resizing alters the
-        fine pixel-level traces that detectors rely on.
-  \item \textbf{Compression:} following Grommelt
-        \emph{et al.}~\cite{grommelt2024fake}, both classes are given
-        matched JPEG compression. % TODO: state exact procedure.
-  \item \textbf{Splitting:} training, validation and test sets are kept
-        disjoint, and selected generators are held out entirely to
-        answer RQ2.
-\end{itemize}
+The inventory showed that file format, resolution and colour mode each
+reveal the source of an image. We therefore rebuilt the dataset so that
+real and generated images differ only in their pixel content.
+
+\begin{enumerate}
+  \item \textbf{Filtering.} BigGAN was removed because its
+        $128\times128$ images cannot be cropped to the $224\times224$
+        input size without resizing. We also removed the 280 grayscale
+        real images and real images whose shorter side is below 224
+        pixels. ADM's alpha channel was dropped by converting every image
+        to three-channel RGB. In total, 31{,}108 of 35{,}000 images
+        remained.
+  \item \textbf{Cropping.} Every image was center-cropped to
+        $224\times224$ pixels. We crop rather than resize, because
+        resizing alters the fine pixel-level traces that detectors rely
+        on. The crop offset is rounded down to a multiple of 16 pixels,
+        so that the $8\times8$ JPEG block grid (and the $16\times16$
+        chroma blocks) of the real images stays aligned with the grid of
+        the generated images.
+  \item \textbf{Compression matching.} All real images are JPEG files and
+        all generated images are lossless PNG files. Following the
+        approach of Grommelt \emph{et al.}~\cite{grommelt2024fake}, we
+        estimated the JPEG quality factor of each real image by matching
+        its luminance quantization table against the standard tables
+        scaled for qualities 1 to 100. Each generated image was then
+        compressed once with a quality factor sampled from the
+        distribution of real training images. After this step, every image
+        in both classes has been JPEG-compressed exactly once.
+  \item \textbf{Splitting and balancing.} The dataset's training split
+        was divided into our training (85\%) and validation (15\%) sets,
+        stratified by source. The dataset's own validation split was kept
+        as an untouched test set. Within each set, real images were
+        sub-sampled to match the number of generated images.
+\end{enumerate}
+
+All real images used standard JPEG quantization tables. Their quality
+factor is concentrated at 96 (12{,}298 of 17{,}500 images, 70\%), with
+smaller groups at 75, 80, 90, 92 and 85. Table~\ref{tab:splits} gives the
+final split sizes and confirms that the median quality factor is the same
+(96) for both classes in every split.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lrrrcc}
+\toprule
+\textbf{Split} & \textbf{Real} & \textbf{Generated} & \textbf{Per generator} & \multicolumn{2}{c}{\textbf{JPEG quality (mean / median)}}\\
+ & & & & \textbf{Real} & \textbf{Generated}\\
+\midrule
+Train & 10{,}200 & 10{,}200 & 1{,}700 & 92.4 / 96 & 92.3 / 96\\
+Validation & 1{,}800 & 1{,}800 & 300 & 92.4 / 96 & 92.6 / 96\\
+Test & 3{,}000 & 3{,}000 & 500 & 94.1 / 96 & 92.4 / 96\\
+\bottomrule
+\end{tabular}
+\caption{Processed dataset: six generators (ADM, GLIDE, Midjourney, SD15, VQDM, Wukong) and real ImageNet images, $224\times224$ pixels.}
+\label{tab:splits}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/04_processed_samples.png}
+\caption{Processed test images, three per source.}
+\label{fig:processed}
+\end{figure}
+
+Two limitations remain. First, the generated test images were compressed
+with qualities drawn from the training distribution, while the real test
+images keep their own, slightly higher, qualities (mean 94.1 versus 92.4).
+Second, because generators produce different resolutions, a fixed
+$224\times224$ crop covers most of a $256\times256$ ADM image but only a
+small region of a $1024\times1024$ Midjourney image
+(Figure~\ref{fig:processed}). The apparent zoom level therefore still
+varies with the source.
 
 \section{Detection Methods}
 \begin{itemize}
