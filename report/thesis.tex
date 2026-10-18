@@ -97,12 +97,17 @@ RQ4 & Can it identify \emph{which} generator produced an image? & Camera model i
   \item A measurement of shortcut learning: the same detector trained on
         the original (biased) and on the de-biased data, evaluated on the
         same test set.
-  \item A comparison of a fine-tuned CNN detector with a detector built on
-        frozen CLIP features, on known and unseen generators and under
-        common image processing.
-  \item Two new test sets collected by us: images from a current
-        generator (ChatGPT) with matching real photographs, and the same
-        images after sharing through WhatsApp.
+  \item A comparison of three generations of detectors (a fine-tuned
+        CNN, frozen CLIP features and the NPR forensic residual) and a
+        simple combination of the last two, on known and unseen
+        generators and under common image processing.
+  \item A ``then versus now'' study: detectors trained on 2021--2023
+        generators tested on 2025--2026 generators, and, conversely,
+        detectors trained on current generators.
+  \item A real-world sharing test in which real and generated images are
+        sent through WhatsApp before detection.
+  \item Visualisations of generator fingerprints in the frequency domain
+        and in the NPR residual.
   \item A demo application in which users upload an image and see the
         detector's prediction.
 \end{itemize}
@@ -142,7 +147,15 @@ observed that detectors trained in this way fail to generalize to newer
 families of generative models. They proposed classifying images in the
 feature space of a pre-trained CLIP model that was never trained for
 real-versus-fake detection.
-% TODO: add 2024--2026 methods after the literature review.
+
+Tan \emph{et al.}~\cite{tan2024npr} argued that the up-sampling layers
+used by both GANs and diffusion models leave local correlations between
+neighbouring pixels. Their Neighbouring Pixel Relationships (NPR)
+representation subtracts from an image a copy that has been
+down-sampled and up-sampled again, which removes most scene content and
+keeps these local traces. A ResNet-50 is then trained on the NPR
+representation instead of the raw image.
+% TODO: add further 2024--2026 methods after the literature review.
 
 \section{Datasets and Dataset Bias}
 GenImage~\cite{zhu2023genimage} is a benchmark of about 1.33 million
@@ -154,6 +167,12 @@ detectors trained on it learn these biases. They reported that removing
 the biases improved robustness to JPEG compression and raised
 cross-generator performance by more than 11 percentage points for
 ResNet-50 and Swin-T detectors.
+
+OpenFake~\cite{livernoche2025openfake} is a recent benchmark that pairs
+real photographs with images from current proprietary and open-source
+generators. Its test split contains only generators that are absent
+from its training split, including GPT Image 1.5, Midjourney 7 and
+Flux.2, together with real images from ImageNet and DOCCI.
 
 % ==================================================================
 \chapter{Proposed Work}
@@ -285,7 +304,18 @@ varies with the source.
   \item \textbf{M2, frozen CLIP features:} image features from a
         pre-trained CLIP model with a linear classifier on top, following
         Ojha \emph{et al.}~\cite{ojha2023universal}.
+  \item \textbf{M3, NPR:} a ResNet-50 trained on the neighbouring pixel
+        relationship representation of Tan
+        \emph{et al.}~\cite{tan2024npr}.
+  \item \textbf{M4, combined detector:} the output scores of M2 and M3
+        combined, so that a semantic detector and a pixel-trace detector
+        contribute to one decision. % TODO: final combination rule.
 \end{itemize}
+
+The three published methods represent three stages of the field: a
+detector trained on raw pixels (2020), a detector built on a large
+pre-trained vision model (2023), and a detector built on a forensic
+residual (2024).
 
 \section{Evaluation Protocol}
 % TODO: define metrics (accuracy, AUC, AP, per-class accuracy) when introduced.
@@ -389,8 +419,17 @@ compression, while AI pixels did not.
 % TODO: same model trained on biased vs de-biased data, tested on the de-biased test set.
 \textit{To be completed.}
 
-\section{Current Generator and Real-World Sharing (E6)}
-% TODO: ChatGPT images + iPhone photos, before and after WhatsApp sharing.
+\section{Current Generators and Real-World Sharing (E6)}
+% TODO: OpenFake test images (GPT Image 1.5, Midjourney 7, Flux.2, ...) and DOCCI real photos,
+% before and after sharing through WhatsApp.
+\textit{To be completed.}
+
+\section{Training on Current Generators (E7)}
+% TODO: train on an OpenFake training subset; test on GenImage and on OpenFake's held-out generators.
+\textit{To be completed.}
+
+\section{Visualising Generator Fingerprints}
+% TODO: average frequency spectra per source and NPR residual examples.
 \textit{To be completed.}
 
 % ==================================================================
