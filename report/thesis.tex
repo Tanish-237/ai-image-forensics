@@ -153,7 +153,8 @@ used by both GANs and diffusion models leave local correlations between
 neighbouring pixels. Their Neighbouring Pixel Relationships (NPR)
 representation subtracts from an image a copy that has been
 down-sampled and up-sampled again, which removes most scene content and
-keeps these local traces. A ResNet-50 is then trained on the NPR
+keeps these local traces. A shallow residual network (the first two
+stages of a ResNet-50) is then trained from scratch on the NPR
 representation instead of the raw image.
 % TODO: add further 2024--2026 methods after the literature review.
 
@@ -304,9 +305,10 @@ varies with the source.
   \item \textbf{M2, frozen CLIP features:} image features from a
         pre-trained CLIP model with a linear classifier on top, following
         Ojha \emph{et al.}~\cite{ojha2023universal}.
-  \item \textbf{M3, NPR:} a ResNet-50 trained on the neighbouring pixel
-        relationship representation of Tan
-        \emph{et al.}~\cite{tan2024npr}.
+  \item \textbf{M3, NPR:} the neighbouring pixel relationship
+        representation of Tan \emph{et al.}~\cite{tan2024npr}, fed to a
+        shallow ResNet (the first two stages of ResNet-50) trained from
+        scratch, as in the authors' released code.
   \item \textbf{M4, combined detector:} the output scores of M2 and M3
         combined, so that a semantic detector and a pixel-trace detector
         contribute to one decision. % TODO: final combination rule.
