@@ -513,8 +513,76 @@ validation loss (epoch 4) guards against this.
 \textit{To be completed.}
 
 \section{Visualising Generator Fingerprints}
-% TODO: average frequency spectra per source and NPR residual examples.
-\textit{To be completed.}
+A single image does not reveal a generator's traces because the scene
+dominates. Following the logic of camera fingerprinting, we removed the
+scene and averaged over many images, so that content cancels out and
+only consistent traces remain.
+
+\subsection*{Frequency spectra of the noise residual}
+For each test image we converted it to greyscale, subtracted a copy
+blurred with a Gaussian filter ($\sigma = 1$) to obtain the noise
+residual, and computed the magnitude of its two-dimensional Fourier
+transform. Figure~\ref{fig:spectra} shows the logarithm of the average
+spectrum over 500 images per source (top) and its difference from the
+real-image average (bottom). The horizontal and vertical lines through
+the centre appear in every source, including real images; they come
+from the image borders rather than from any generator.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/05_spectra.png}
+\caption{Average log spectrum of the noise residual per source (top) and difference from real images (bottom; blue = weaker than real, red = stronger).}
+\label{fig:spectra}
+\end{figure}
+
+Three observations stand out:
+\begin{itemize}
+  \item \textbf{Generated images carry less high-frequency energy than
+        real photographs.} The difference maps are mostly blue towards
+        the edges, so generated images are smoother at the finest scale.
+  \item \textbf{GLIDE has the most distinctive spectrum.} Its energy is
+        confined to a diamond-shaped central region, and the corners are
+        almost empty. This pattern is consistent with an image that was
+        produced at a lower resolution and enlarged. GLIDE was also the
+        easiest generator for M1 (99.6\% accuracy).
+  \item \textbf{VQDM and, more faintly, Midjourney show a regular grid of
+        bright points}, the periodic peaks expected from repeated
+        up-sampling. SD15 and Wukong have spectra close to each other and
+        close to real images.
+\end{itemize}
+
+\subsection*{NPR residuals}
+Figure~\ref{fig:npr} shows a $64\times64$ region of one test image per
+source and the magnitude of its NPR residual. In the real image the
+residual follows the edges of the scene. In the SD15 example, a nearly
+uniform blue region still produces a dense, regular residual pattern,
+which is a trace of the generation process rather than of the content.
+Table~\ref{tab:npr} lists the mean absolute NPR value over 500 images per
+source. Every generator has a lower value than real images, meaning
+neighbouring pixels are more alike in generated images. GLIDE has the
+lowest value (3.6 against 9.6 for real images), while SD15 and Wukong are
+closest to real images.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/05_npr_examples.png}
+\caption{Image regions ($64\times64$, top) and the magnitude of their NPR residual (bottom).}
+\label{fig:npr}
+\end{figure}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lccccccc}
+\toprule
+ & \textbf{Real} & \textbf{ADM} & \textbf{GLIDE} & \textbf{MJ} & \textbf{SD15} & \textbf{VQDM} & \textbf{Wukong}\\
+\midrule
+Mean $|$NPR$|$ & 9.63 & 5.79 & 3.60 & 5.05 & 8.55 & 7.15 & 9.03\\
+\bottomrule
+\end{tabular}
+\caption{Mean absolute NPR residual per source (pixel units, 500 images each).}
+\label{tab:npr}
+\end{table}
 
 % ==================================================================
 \chapter{Conclusion and Future Work}
