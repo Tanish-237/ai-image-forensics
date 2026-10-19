@@ -447,7 +447,8 @@ per epoch on a T4 GPU.
 \midrule
 M1 (ResNet-50) & 0.965 & 0.994 & 0.994 & 0.104\\
 M2 (CLIP + logistic regression) & 0.975 & 0.997 & 0.996 & 0.069\\
-% M3, M4 rows to be added
+M3 (NPR) & 0.966 & 0.994 & 0.992 & 0.091\\
+% M4 row to be added
 \bottomrule
 \end{tabular}
 \caption{E1: test results on the six training generators.}
@@ -468,6 +469,7 @@ were the hardest (Table~\ref{tab:e1-source}).
 \midrule
 M1 & 0.972 & 0.916 & 0.996 & 0.936 & 0.982 & 0.970 & 0.954\\
 M2 & 0.978 & 0.944 & 0.992 & 0.978 & 0.978 & 0.974 & 0.968\\
+M3 & 0.944 & 0.976 & 1.000 & 0.988 & 0.988 & 0.990 & 0.980\\
 \bottomrule
 \end{tabular}
 \caption{E1: per-source test accuracy (for Real, images correctly called real; for generators, images correctly called generated).}
@@ -506,7 +508,41 @@ linear classifier of 769 parameters therefore matched and slightly
 exceeded a fully fine-tuned network with about 23.5 million trainable
 parameters on the generators seen during training. ADM was the hardest
 generator for both methods.
-% TODO: add M3, M4 and a comparison paragraph.
+
+\subsection*{M3: NPR}
+M3 was trained from scratch for 10 epochs with a learning rate of
+$2\times10^{-4}$ and batches of 32, the settings used in the authors'
+GenImage example. The network has 1.44 million parameters. Unlike M1,
+its training and validation losses fell together for most of training
+(Figure~\ref{fig:m3-curves}). Validation loss was lowest at epoch 8
+(0.130), and that checkpoint was used for testing.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/m3_npr_curves.png}
+\caption{M3 training curves. Training and validation loss decrease together until about epoch 8.}
+\label{fig:m3-curves}
+\end{figure}
+
+M3 reached a test accuracy of 96.6\%, a ROC-AUC of 0.994 and an AP of
+0.992, close to M1 overall. Its errors, however, are distributed
+differently. M3 detected every generator with at least 97.6\%
+accuracy, including ADM, the hardest generator for M1 and M2, and it
+detected all 500 GLIDE test images. In exchange it misclassified more
+real photographs: 5.6\% of real test images were labelled as generated,
+compared with 2.8\% for M1 and 2.2\% for M2. A detector that looks only
+at local pixel relationships is therefore more sensitive to generated
+images but also more likely to raise false alarms on real ones.
+
+\subsection*{Comparison}
+On generators seen during training, all three detectors exceed 96\%
+accuracy and a ROC-AUC of 0.99, so this setting does not separate them
+strongly. M2 is best overall and the most balanced; M3 is the most
+sensitive to generated images but has the highest false-alarm rate on
+real photographs; M1 lies between them. ADM is the hardest generator for
+M1 and M2 but not for M3. The more informative comparison is on
+generators the detectors have not seen, which E2 and E6 address.
+% TODO: add M4.
 
 \section{Generalization to Unseen Generators (E2)}
 % TODO
