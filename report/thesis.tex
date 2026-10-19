@@ -545,8 +545,94 @@ generators the detectors have not seen, which E2 and E6 address.
 % TODO: add M4.
 
 \section{Generalization to Unseen Generators (E2)}
-% TODO
-\textit{To be completed.}
+In E2 each detector was trained and validated only on SD15 images and an
+equal number of real images (3{,}400 training and 600 validation
+images), and then tested on the full test set. SD15 is therefore the only
+generator seen during training; ADM, GLIDE, Midjourney, VQDM and Wukong
+are unseen. Validation also used only SD15 and real images, so that the
+unseen generators had no influence on model selection. Because the
+training set was six times smaller, M1 was trained for 10 epochs and M3
+for 30 epochs, each keeping the checkpoint with the lowest validation
+loss. For M2 the regularisation strength was again selected on the
+validation set ($C = 100$).
+
+For each generator we report two measures: the detection rate (the
+fraction of its images labelled generated at the 0.5 threshold) and the
+ROC-AUC between real test images and that generator's images, which does
+not depend on the threshold.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lccccccc|c}
+\toprule
+ & \textbf{Real} & \textbf{SD15} & \textbf{ADM} & \textbf{GLIDE} & \textbf{MJ} & \textbf{VQDM} & \textbf{Wukong} & \textbf{Unseen}\\
+ & & (seen) & & & & & & \textbf{mean}\\
+\midrule
+\multicolumn{9}{l}{\emph{Correct rate (\%)}}\\
+M1 & 97.6 & 97.8 & 22.0 & 61.4 & 76.8 & 28.0 & 84.6 & 54.6\\
+M2 & 98.1 & 97.6 & 65.4 & 75.8 & 95.0 & 72.4 & 92.0 & \textbf{80.1}\\
+M3 & 96.1 & 96.4 & 39.8 & 69.6 & 65.2 & 36.4 & 87.0 & 59.6\\
+\midrule
+\multicolumn{9}{l}{\emph{ROC-AUC (real vs generator)}}\\
+M1 & -- & 0.997 & 0.824 & 0.956 & 0.972 & 0.848 & 0.983 & 0.917\\
+M2 & -- & 0.997 & 0.964 & 0.981 & 0.994 & 0.974 & 0.993 & \textbf{0.981}\\
+M3 & -- & 0.991 & 0.897 & 0.958 & 0.934 & 0.870 & 0.977 & 0.927\\
+\bottomrule
+\end{tabular}
+\caption{E2: detectors trained on SD15 only. Correct rate is the fraction of real images labelled real, or of a generator's images labelled generated.}
+\label{tab:e2}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/e2_detection.png}
+\caption{E2: correct rate per source for detectors trained on SD15 only.}
+\label{fig:e2-detection}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.9\textwidth]{figures/e2_auc.png}
+\caption{E2: ROC-AUC between real images and each generator.}
+\label{fig:e2-auc}
+\end{figure}
+
+Table~\ref{tab:e2} and Figures~\ref{fig:e2-detection}
+and~\ref{fig:e2-auc} show four findings.
+
+\begin{enumerate}
+  \item \textbf{All detectors work on the seen generator and fail
+        partly on unseen ones.} Every method detected about 97\% of SD15
+        images and kept real-image accuracy above 96\%. On the five unseen
+        generators, the mean detection rate fell to 54.6\% for M1 and
+        59.6\% for M3.
+  \item \textbf{M2 (CLIP) generalised best by a wide margin.} Its mean
+        detection rate on unseen generators was 80.1\% and its mean
+        ROC-AUC 0.981, against 0.917 for M1 and 0.927 for M3. This agrees
+        with the claim of Ojha \emph{et al.}~\cite{ojha2023universal} that
+        a frozen general-purpose representation generalises better than
+        a network fine-tuned on one generator. M2 was best on every unseen
+        generator.
+  \item \textbf{Errors on unseen generators are mainly threshold errors.}
+        For M1, ADM images had a ROC-AUC of 0.824 but only 22\% were
+        detected; for GLIDE the ROC-AUC was 0.956 but the detection rate
+        61.4\%. The detectors still scored most unseen generated images
+        higher than real images, but below the 0.5 threshold learned on
+        SD15. The real-image accuracy stayed high, so nearly all errors
+        are missed generated images rather than false alarms.
+  \item \textbf{Generators that resemble SD15 are easier.} Wukong, whose
+        frequency spectrum was close to that of SD15
+        (Figure~\ref{fig:spectra}), was the easiest unseen generator for
+        all three methods (84.6--92.0\%). VQDM, whose spectrum showed a
+        distinct grid of peaks, and ADM were the hardest. GLIDE, despite
+        its very different spectrum, was of intermediate difficulty, so
+        spectral similarity explains part but not all of the pattern.
+\end{enumerate}
+
+M3 also showed unstable validation loss when trained on the smaller
+SD15-only set (between 0.15 and 0.54 across epochs), and its best
+checkpoint came from epoch 18.
 
 \section{Robustness to Image Processing (E3)}
 % TODO

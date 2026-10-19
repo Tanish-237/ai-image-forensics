@@ -26,7 +26,9 @@ This project is a forensic study of AI-generated images. Given only the pixels, 
 |---|---|---|
 | E0 | Pilot set (5 iPhone photos, 5 ChatGPT images): can file properties alone separate the classes? | Yes. Format, size, EXIF and colour-profile rules each score **100%**. |
 | E0b | Same rules after normalization (crop to 512, rebuild from pixels, PNG) | Every rule drops to **50%** (chance). |
-| E1–E4 | Main experiments on Tiny GenImage | In progress |
+| E1 | Train and test on all six generators | M1 96.5%, M2 97.5%, M3 96.6% accuracy (ROC-AUC 0.994 / 0.997 / 0.994) |
+| E2 | Train on SD15 only, test on five unseen generators | Mean detection on unseen generators: M1 54.6%, **M2 80.1%**, M3 59.6% |
+| E3–E7 | Robustness, attribution, de-biasing, 2026 generators, training on 2026 data | In progress |
 
 ## Repository layout
 
