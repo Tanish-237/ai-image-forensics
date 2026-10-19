@@ -223,6 +223,7 @@ resolution, so size alone separates BigGAN, Midjourney and the real
 images from the rest.
 
 \section{Bias Control}
+\label{sec:bias}
 The inventory showed that file format, resolution and colour mode each
 reveal the source of an image. We therefore rebuilt the dataset so that
 real and generated images differ only in their pixel content.
@@ -643,8 +644,94 @@ checkpoint came from epoch 18.
 \textit{To be completed.}
 
 \section{Effect of De-biasing (E5)}
-% TODO: same model trained on biased vs de-biased data, tested on the de-biased test set.
-\textit{To be completed.}
+E5 measures how much of a detector's accuracy can come from the
+compression shortcut described in Section~\ref{sec:bias} rather than
+from the image content. We built a second, \emph{uncleaned} copy of the
+dataset that skips one step of the bias control: generated images are
+cropped but not JPEG-compressed. Everything else is identical, including
+the selected images, the crop positions and the splits; the real images
+are the same pixel arrays in both copies. On the 3{,}000 generated test
+images, the JPEG step changed pixel values by 2.03 levels out of 255 on
+average, a difference that is not visible to a human viewer.
+
+A new M1 detector was trained on the uncleaned training set with the
+same settings as in E1 (5 epochs, lowest validation loss at epoch 4).
+It was then tested on both test sets, together with the E1 M1 detector,
+which was trained on the cleaned data. The cleaned--cleaned result
+reproduces E1 exactly (96.5\%), which confirms that both runs used the
+same test images.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{llccc}
+\toprule
+\textbf{Trained on} & \textbf{Tested on} & \textbf{Accuracy} & \textbf{ROC-AUC} & \textbf{AP}\\
+\midrule
+Uncleaned & Uncleaned & 0.988 & 0.999 & 0.999\\
+Uncleaned & Cleaned   & 0.789 & 0.936 & 0.942\\
+Cleaned (E1) & Uncleaned & 0.870 & 0.969 & 0.968\\
+Cleaned (E1) & Cleaned   & 0.965 & 0.994 & 0.994\\
+\bottomrule
+\end{tabular}
+\caption{E5: M1 trained on uncleaned or cleaned data, tested on both versions of the test set.}
+\label{tab:e5}
+\end{table}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{llccccccc}
+\toprule
+\textbf{Trained} & \textbf{Tested} & \textbf{Real} & \textbf{ADM} & \textbf{GLIDE} & \textbf{MJ} & \textbf{SD15} & \textbf{VQDM} & \textbf{Wukong}\\
+\midrule
+Uncleaned & Uncleaned & 98.5 & 98.6 & 99.6 & 97.8 & 99.4 & 99.8 & 99.2\\
+Uncleaned & Cleaned   & 98.5 & 41.8 & 71.6 & 62.4 & 63.4 & 55.4 & 61.8\\
+Cleaned   & Uncleaned & 97.2 & 51.2 & 97.2 & 93.6 & 85.2 & 68.8 & 65.0\\
+Cleaned   & Cleaned   & 97.2 & 91.6 & 99.6 & 93.6 & 98.2 & 97.0 & 95.4\\
+\bottomrule
+\end{tabular}
+\caption{E5: correct rate (\%) per source.}
+\label{tab:e5-source}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/e5_shortcut.png}
+\caption{E5: overall accuracy for both models on both test sets (left) and per-source correct rate on the cleaned test set (right). The dashed line marks 50\%.}
+\label{fig:e5}
+\end{figure}
+
+Table~\ref{tab:e5}, Table~\ref{tab:e5-source} and
+Figure~\ref{fig:e5} show three findings.
+
+\begin{enumerate}
+  \item \textbf{The uncleaned benchmark overstates accuracy.} The model
+        trained on uncleaned data scored 98.8\% on its own test set,
+        higher than any detector in E1. When the same generated images
+        were JPEG-compressed like the real ones, its accuracy fell to
+        78.9\%, a drop of 19.9 percentage points. On the fair (cleaned)
+        test set it was 17.6 points below the model trained on cleaned
+        data.
+  \item \textbf{The model had learned ``JPEG traces mean real''.} Its
+        accuracy on real images was unchanged (98.5\%), but its
+        detection rate on every generator fell, to between 41.8\% (ADM)
+        and 71.6\% (GLIDE). Compressing a generated image was enough to
+        make it look real to this detector. This matches the finding of
+        Grommelt \emph{et al.}~\cite{grommelt2024fake} on the full
+        GenImage dataset.
+  \item \textbf{The shortcut was only part of what it learned.} Its
+        ROC-AUC on the cleaned test set remained 0.936, well above
+        chance, so the model also learned genuine generator traces;
+        the shortcut mainly shifted its scores below the threshold.
+\end{enumerate}
+
+The model trained on cleaned data also lost accuracy on the uncleaned
+test set (96.5\% to 87.0\%), mostly on ADM (51.2\%), Wukong (65.0\%) and
+VQDM (68.8\%). Every generated image it saw during training had been
+JPEG-compressed, so uncompressed generated images were outside its
+training distribution. A mismatch in processing therefore hurts in
+both directions, which motivates the robustness tests in E3.
 
 \section{Current Generators and Real-World Sharing (E6)}
 % TODO: OpenFake test images (GPT Image 1.5, Midjourney 7, Flux.2, ...) and DOCCI real photos,

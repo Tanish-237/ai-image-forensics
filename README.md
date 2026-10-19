@@ -19,6 +19,7 @@ This project is a forensic study of AI-generated images. Given only the pixels, 
 
 - **M1:** a ResNet-50 fine-tuned for real vs fake, following Wang et al., CVPR 2020.
 - **M2:** frozen CLIP image features with a linear classifier, following Ojha et al., CVPR 2023.
+- **M3:** NPR (neighbouring pixel relationships) with a shallow ResNet, following Tan et al., CVPR 2024.
 
 ## Results so far
 
@@ -28,7 +29,8 @@ This project is a forensic study of AI-generated images. Given only the pixels, 
 | E0b | Same rules after normalization (crop to 512, rebuild from pixels, PNG) | Every rule drops to **50%** (chance). |
 | E1 | Train and test on all six generators | M1 96.5%, M2 97.5%, M3 96.6% accuracy (ROC-AUC 0.994 / 0.997 / 0.994) |
 | E2 | Train on SD15 only, test on five unseen generators | Mean detection on unseen generators: M1 54.6%, **M2 80.1%**, M3 59.6% |
-| E3–E7 | Robustness, attribution, de-biasing, 2026 generators, training on 2026 data | In progress |
+| E5 | Train M1 on uncleaned data (fakes not JPEG-compressed), test on both versions | 98.8% on its own test set, **78.9%** once fakes are compressed like real photos (cleaned-data model: 96.5%) |
+| E3, E4, E6, E7 | Robustness, attribution, 2026 generators, training on 2026 data | In progress |
 
 ## Repository layout
 
