@@ -12,7 +12,7 @@ This project is a forensic study of AI-generated images. Given only the pixels, 
 |---|---|---|
 | RQ1 | Can a detector separate real photos from AI images made by known generators? | E1 |
 | RQ2 | Does it still work on generators it never saw during training? | E2 |
-| RQ3 | How robust is it to JPEG compression, resizing and cropping? | E3 |
+| RQ3 | How robust is it to JPEG compression, resizing and blur? | E3 |
 | RQ4 | Can it identify *which* generator made an image? | E4 |
 
 ## Methods
@@ -20,6 +20,7 @@ This project is a forensic study of AI-generated images. Given only the pixels, 
 - **M1:** a ResNet-50 fine-tuned for real vs fake, following Wang et al., CVPR 2020.
 - **M2:** frozen CLIP image features with a linear classifier, following Ojha et al., CVPR 2023.
 - **M3:** NPR (neighbouring pixel relationships) with a shallow ResNet, following Tan et al., CVPR 2024.
+- **M4:** the average of the M2 and M3 scores (no extra training).
 
 ## Results so far
 
@@ -27,10 +28,11 @@ This project is a forensic study of AI-generated images. Given only the pixels, 
 |---|---|---|
 | E0 | Pilot set (5 iPhone photos, 5 ChatGPT images): can file properties alone separate the classes? | Yes. Format, size, EXIF and colour-profile rules each score **100%**. |
 | E0b | Same rules after normalization (crop to 512, rebuild from pixels, PNG) | Every rule drops to **50%** (chance). |
-| E1 | Train and test on all six generators | M1 96.5%, M2 97.5%, M3 96.6% accuracy (ROC-AUC 0.994 / 0.997 / 0.994) |
+| E1 | Train and test on all six generators | M1 96.5%, M2 97.5%, M3 96.6%, **M4 98.8%** accuracy (ROC-AUC 0.994 / 0.997 / 0.994 / 0.999) |
 | E2 | Train on SD15 only, test on five unseen generators | Mean detection on unseen generators: M1 54.6%, **M2 80.1%**, M3 59.6% |
 | E5 | Train M1 on uncleaned data (fakes not JPEG-compressed), test on both versions | 98.8% on its own test set, **78.9%** once fakes are compressed like real photos (cleaned-data model: 96.5%) |
-| E3, E4, E6, E7 | Robustness, attribution, 2026 generators, training on 2026 data | In progress |
+| E3 | JPEG, resizing and blur applied to the test set (no retraining) | Real photos get flagged as fake: at half size only 1–6% of real photos are called real. NPR is the most JPEG-sensitive. |
+| E4, E6, E7 | Attribution, 2026 generators, training on 2026 data | In progress |
 
 ## Repository layout
 

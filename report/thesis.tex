@@ -31,7 +31,7 @@ The generator plays the role that a camera plays in classical media
 forensics, and it is expected to leave its own statistical fingerprint in
 the pixels. We evaluate detectors in four stages: real-versus-AI
 detection, generalization to generators unseen during training,
-robustness to common processing (JPEG compression, resizing, cropping)
+robustness to common processing (JPEG compression, resizing, blur)
 and attribution to a specific generator.
 
 A pilot study on our own images shows why careful dataset design is
@@ -80,7 +80,7 @@ during training and after common image processing.
 \midrule
 RQ1 & Can a detector separate real photographs from AI-generated images from known generators? & Was this image captured by a camera?\\
 RQ2 & Does it still work on generators never seen in training? & A camera missing from the reference database\\
-RQ3 & How does performance change under JPEG compression, resizing and cropping? & Camera fingerprints weakening after processing\\
+RQ3 & How does performance change under JPEG compression, resizing and blur? & Camera fingerprints weakening after processing\\
 RQ4 & Can it identify \emph{which} generator produced an image? & Camera model identification\\
 \bottomrule
 \end{tabular}
@@ -311,8 +311,9 @@ varies with the source.
         shallow ResNet (the first two stages of ResNet-50) trained from
         scratch, as in the authors' released code.
   \item \textbf{M4, combined detector:} the output scores of M2 and M3
-        combined, so that a semantic detector and a pixel-trace detector
-        contribute to one decision. % TODO: final combination rule.
+        averaged, so that a semantic detector and a pixel-trace detector
+        contribute equally to one decision. M4 needs no additional
+        training.
 \end{itemize}
 
 The three published methods represent three stages of the field: a
@@ -449,7 +450,7 @@ per epoch on a T4 GPU.
 M1 (ResNet-50) & 0.965 & 0.994 & 0.994 & 0.104\\
 M2 (CLIP + logistic regression) & 0.975 & 0.997 & 0.996 & 0.069\\
 M3 (NPR) & 0.966 & 0.994 & 0.992 & 0.091\\
-% M4 row to be added
+M4 (mean of M2 and M3) & 0.988 & 0.999 & -- & --\\
 \bottomrule
 \end{tabular}
 \caption{E1: test results on the six training generators.}
@@ -543,7 +544,12 @@ sensitive to generated images but has the highest false-alarm rate on
 real photographs; M1 lies between them. ADM is the hardest generator for
 M1 and M2 but not for M3. The more informative comparison is on
 generators the detectors have not seen, which E2 and E6 address.
-% TODO: add M4.
+
+M4, the average of the M2 and M3 scores, reached 98.8\% accuracy and a
+ROC-AUC of 0.999, the best result in E1, although it required no
+training. Real-image accuracy rose to 98.1\% and the detection rate on
+generated images to 99.5\%: the two methods make different mistakes,
+so averaging their scores corrects many of them.
 
 \section{Generalization to Unseen Generators (E2)}
 In E2 each detector was trained and validated only on SD15 images and an
@@ -636,8 +642,101 @@ SD15-only set (between 0.15 and 0.54 across epochs), and its best
 checkpoint came from epoch 18.
 
 \section{Robustness to Image Processing (E3)}
-% TODO
-\textit{To be completed.}
+\label{sec:e3}
+Images shared online are rarely the original files. E3 tests the E1
+detectors, without retraining, on processed copies of the cleaned test
+set. Three kinds of processing were applied, each at several strengths:
+JPEG compression at quality 95, 85, 75, 65 and 50; resizing to 90\%,
+75\%, 60\% and 50\% of the side length and back to $224\times224$ pixels
+(bilinear interpolation); and Gaussian blur with $\sigma$ = 0.5, 1.0,
+1.5 and 2.0 pixels. Real and generated images received identical
+processing. The unprocessed results reproduce E1 exactly (M1 0.965, M2
+0.975, M3 0.966), and M4 is included.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lcccccc}
+\toprule
+ & \textbf{None} & \textbf{JPEG 85} & \textbf{JPEG 50} & \textbf{Resize 0.75} & \textbf{Resize 0.5} & \textbf{Blur 1.0}\\
+\midrule
+\multicolumn{7}{l}{\emph{Accuracy}}\\
+M1 & 0.965 & 0.884 & 0.798 & \textbf{0.826} & 0.530 & \textbf{0.706}\\
+M2 & 0.975 & \textbf{0.896} & 0.822 & 0.713 & 0.527 & 0.649\\
+M3 & 0.966 & 0.601 & 0.685 & 0.737 & 0.517 & 0.705\\
+M4 & \textbf{0.988} & 0.855 & \textbf{0.832} & 0.728 & 0.507 & 0.673\\
+\midrule
+\multicolumn{7}{l}{\emph{ROC-AUC}}\\
+M1 & 0.994 & 0.952 & \textbf{0.913} & 0.968 & \textbf{0.853} & 0.940\\
+M2 & 0.997 & 0.965 & 0.904 & 0.948 & 0.816 & 0.916\\
+M3 & 0.994 & 0.816 & 0.764 & 0.938 & 0.700 & 0.913\\
+M4 & \textbf{0.999} & \textbf{0.967} & 0.902 & \textbf{0.974} & 0.782 & \textbf{0.952}\\
+\bottomrule
+\end{tabular}
+\caption{E3: selected processing settings (all settings are shown in Figures~\ref{fig:e3-errors} and~\ref{fig:e3-auc}).}
+\label{tab:e3}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/e3_errors.png}
+\caption{E3: fraction of real photographs labelled real (top) and of generated images labelled generated (bottom) under increasing processing.}
+\label{fig:e3-errors}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/e3_auc.png}
+\caption{E3: ROC-AUC under increasing processing.}
+\label{fig:e3-auc}
+\end{figure}
+
+Table~\ref{tab:e3} and Figures~\ref{fig:e3-errors}
+and~\ref{fig:e3-auc} show four findings.
+
+\begin{enumerate}
+  \item \textbf{Processing makes real photographs look generated.}
+        Under resizing and blur the detection rate on generated images
+        stayed near 100\%, while the fraction of real photographs
+        labelled real collapsed: to between 1\% and 6\% at half size, and
+        to between 0\% and 10\% at $\sigma = 1.5$ or more. Accuracy
+        therefore fell to about 50\% because the detectors called almost
+        everything generated. Resizing and blur remove fine detail and
+        sensor noise, and a real photograph without them resembles a
+        generated image to these detectors. In practice this is the more
+        harmful error, since a genuine photograph would be wrongly
+        flagged as fake.
+  \item \textbf{M3 (NPR) is the most sensitive to JPEG.} A single
+        additional compression at quality 95 reduced M3's real-image
+        accuracy from 94.4\% to 13.0\% and its ROC-AUC to 0.788. NPR
+        measures differences between neighbouring pixels, which JPEG
+        alters in every $8\times8$ block. For M1, stronger compression
+        had the opposite effect: real-image accuracy recovered while the
+        detection rate on generated images fell to 65.2\% at quality 50,
+        so JPEG pushed its scores towards ``real''. The effect of JPEG
+        did not increase steadily with lower quality; quality 95 caused
+        more false alarms than quality 85 for every method.
+  \item \textbf{No single method is the most robust.} M1 was the most
+        robust to resizing and strong JPEG in accuracy, M2 had the highest
+        accuracy at JPEG quality 85, and M4
+        had the highest ROC-AUC under blur and moderate resizing. M2,
+        which generalised best to unseen generators in E2, was the most
+        affected by mild resizing (real-image accuracy 54.8\% at 90\%
+        size).
+  \item \textbf{Ranking survives longer than the threshold.} ROC-AUC
+        fell much more slowly than accuracy; at 75\% size all methods
+        kept a ROC-AUC above 0.93 while their accuracy was 0.71--0.83.
+        As in E2, the detectors still ranked most generated images above
+        real ones, but processing shifted all scores upwards past the
+        0.5 threshold.
+\end{enumerate}
+
+Wang \emph{et al.}~\cite{wang2020cnn} reported that adding blur and JPEG
+to the training images improves robustness to these operations. Our
+detectors were trained without such augmentation, which is a likely
+reason for their sensitivity. Cropping was not tested separately:
+cropping followed by rescaling to the input size is an enlargement,
+which overlaps with the resizing test.
 
 \section{Generator Attribution (E4)}
 % TODO
