@@ -32,7 +32,8 @@ This project is a forensic study of AI-generated images. Given only the pixels, 
 | E2 | Train on SD15 only, test on five unseen generators | Mean detection on unseen generators: M1 54.6%, **M2 80.1%**, M3 59.6% |
 | E5 | Train M1 on uncleaned data (fakes not JPEG-compressed), test on both versions | 98.8% on its own test set, **78.9%** once fakes are compressed like real photos (cleaned-data model: 96.5%) |
 | E3 | JPEG, resizing and blur applied to the test set (no retraining) | Real photos get flagged as fake: at half size only 1–6% of real photos are called real. NPR is the most JPEG-sensitive. |
-| E4, E6, E7 | Attribution, 2026 generators, training on 2026 data | In progress |
+| E4 | Which of 7 sources made the image? (chance 14.3%) | CLIP + LR 80.0%, **fine-tuned ResNet-50 86.1%**; most confusion between SD15 and Wukong |
+| E6, E7 | 2026 generators, training on 2026 data | In progress |
 
 ## Repository layout
 

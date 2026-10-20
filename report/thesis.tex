@@ -739,8 +739,68 @@ cropping followed by rescaling to the input size is an enlargement,
 which overlaps with the resizing test.
 
 \section{Generator Attribution (E4)}
-% TODO
-\textit{To be completed.}
+E4 asks which of the seven sources (real or one of the six generators)
+produced an image. Real images were sub-sampled in every split to the
+size of one generator class (1{,}700 per class for training, 300 for
+validation and 500 for testing), so all seven classes are equally
+represented and random guessing scores 14.3\%. Two attribution models
+were trained:
+\begin{itemize}
+  \item \textbf{A1:} the frozen CLIP features of M2 with a seven-class
+        logistic regression. The regularisation strength was selected on
+        the validation set ($C = 10$).
+  \item \textbf{A2:} ResNet-50 fine-tuned as in M1, with seven outputs,
+        a softmax and the cross-entropy loss. Validation loss was lowest
+        at epoch 3.
+\end{itemize}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lccccccc|cc}
+\toprule
+ & \textbf{Real} & \textbf{ADM} & \textbf{GLIDE} & \textbf{MJ} & \textbf{SD15} & \textbf{VQDM} & \textbf{Wukong} & \textbf{Acc.} & \textbf{Macro-F1}\\
+\midrule
+A1 (CLIP) & \textbf{95.8} & 78.4 & 90.8 & 83.6 & 67.8 & 77.8 & 66.0 & 80.0 & 0.800\\
+A2 (ResNet-50) & 92.2 & \textbf{89.6} & \textbf{95.8} & \textbf{90.8} & \textbf{75.8} & \textbf{90.4} & \textbf{68.4} & \textbf{86.1} & \textbf{0.861}\\
+\bottomrule
+\end{tabular}
+\caption{E4: per-class recall (\%), accuracy (\%) and macro-F1 for seven-way attribution. Chance level is 14.3\%.}
+\label{tab:e4}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/e4_confusion.png}
+\caption{E4: confusion matrices (\% of each true source). Rows are the true source, columns the predicted source.}
+\label{fig:e4}
+\end{figure}
+
+Table~\ref{tab:e4} and Figure~\ref{fig:e4} show three findings.
+
+\begin{enumerate}
+  \item \textbf{Generators can be identified from pixels alone.} Both
+        models were far above the chance level of 14.3\%: A1 reached
+        80.0\% and A2 86.1\%. Each generator therefore leaves traces
+        that differ not only from real photographs but also from other
+        generators.
+  \item \textbf{Fine-tuning is better for attribution, unlike for
+        generalisation.} A2 was better than A1 for every generator, by
+        up to 12.6 points (VQDM). CLIP was best at recognising
+        unseen generators in E2, but telling known generators apart
+        depends on low-level traces that a fine-tuned network learns and
+        that frozen semantic features capture less well. A1 was slightly
+        better only on real images (95.8\% against 92.2\%).
+  \item \textbf{SD15 and Wukong are confused with each other.} Most
+        remaining errors fall between these two generators: 16--19\% of
+        SD15 images were attributed to Wukong, and 20--24\% of Wukong
+        images to SD15. Their averaged frequency spectra were also the
+        most similar (Figure~\ref{fig:spectra}), and Wukong was the
+        easiest unseen generator for a detector trained on SD15 in E2.
+        Three independent measurements therefore agree that the two
+        generators leave similar fingerprints. A1 also confused ADM and
+        VQDM (11--12\% in each direction); A2 largely separated them.
+\end{enumerate}
 
 \section{Effect of De-biasing (E5)}
 E5 measures how much of a detector's accuracy can come from the
