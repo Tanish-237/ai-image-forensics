@@ -654,6 +654,13 @@ are the same pixel arrays in both copies. On the 3{,}000 generated test
 images, the JPEG step changed pixel values by 2.03 levels out of 255 on
 average, a difference that is not visible to a human viewer.
 
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/e5_jpeg_difference.png}
+\caption{A $64\times64$ patch of an SD15 test image without (left) and with (centre) the JPEG step. The amplified difference (right) is concentrated along edges and fine detail, where JPEG discards high-frequency information.}
+\label{fig:e5-difference}
+\end{figure}
+
 A new M1 detector was trained on the uncleaned training set with the
 same settings as in E1 (5 epochs, lowest validation loss at epoch 4).
 It was then tested on both test sets, together with the E1 M1 detector,
