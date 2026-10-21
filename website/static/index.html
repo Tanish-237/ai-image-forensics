@@ -34,7 +34,7 @@
       <div class="stats">
         <div><strong>98.8%</strong><span>accuracy on the generators we trained on</span></div>
         <div><strong>0.72&ndash;0.75</strong><span>ROC-AUC of the same detectors on 2024&ndash;26 generators</span></div>
-        <div><strong>0.96</strong><span>after retraining on recent generators</span></div>
+        <div><strong>98%</strong><span>of real Android and iPhone photos called real by our final detector</span></div>
       </div>
     </section>
 
@@ -85,7 +85,7 @@
 
     <section id="findings" class="panel">
       <h2>What we found</h2>
-      <p class="muted">Nine experiments on Tiny GenImage (six generators from 2021&ndash;23) and OpenFake (generators from 2024&ndash;26). All numbers below are our own measurements.</p>
+      <p class="muted">Our experiments on Tiny GenImage (six generators from 2021&ndash;23), OpenFake (generators from 2024&ndash;26), real photographs from 57 phone models and images from ChatGPT and Gemini. All numbers below are our own measurements.</p>
 
       <div class="cards">
         <article class="card">
@@ -142,6 +142,17 @@
           <p>With 17,780 training images from 74 generators, the CLIP detector reached 0.96 on 2024&ndash;26 generators. Scoring a grid of tiles over the whole image instead of one centre crop raised its ROC-AUC after WhatsApp from 0.85 to 0.93. Training with random blur, resizing and compression did not help in our setting.</p>
           <img src="/static/figures/e8_robust.png" alt="Effect of more data, augmentation and full-image analysis" loading="lazy">
         </article>
+        <article class="card wide">
+          <span class="tag">Benchmark vs real world</span>
+          <h3>A 0.999 benchmark score, and most real photos called AI</h3>
+          <p>A detector trained on every recent generator in OpenFake reached a ROC-AUC of 0.999 on its test set, yet it called only 45% of phone photos and 28% of camera photos real: all of its real training images came from two photo collections. Adding photos from 57 phone models fixed this. Our final detector calls 98% of Android and iPhone photos real and detects 97% of ChatGPT and 99% of Gemini images.</p>
+          <img src="/static/figures/e10_real_world.png" alt="Correct decisions of three detectors on phone photos, camera photos and generated images" loading="lazy">
+        </article>
+        <article class="card wide">
+          <span class="tag">Provenance</span>
+          <h3>ChatGPT signs its images, until they are shared</h3>
+          <p>Images downloaded from ChatGPT carry Content Credentials (C2PA): a record that says &ldquo;created by ChatGPT, a trained model&rdquo;, signed by OpenAI and tied to the exact pixels. We verified them against the official C2PA trust list; changing a single pixel breaks the signature. WhatsApp removed the record from the ChatGPT image we sent, so the pixel detector is still needed.</p>
+        </article>
       </div>
     </section>
 
@@ -152,7 +163,7 @@
         <li><strong>Three generations of detectors.</strong> A fine-tuned ResNet-50 (Wang et al., 2020), frozen CLIP features with a linear classifier (Ojha et al., 2023) and NPR, which looks at differences between neighbouring pixels (Tan et al., 2024), plus their combination.</li>
         <li><strong>Stress tests.</strong> Unseen generators, JPEG, resizing and blur, 2024&ndash;26 generators from OpenFake, and real sharing through WhatsApp.</li>
         <li><strong>Attribution.</strong> A seven-class model that names the source of an image.</li>
-        <li><strong>This website.</strong> First the file's provenance is read. ChatGPT and a growing number of other generators and cameras attach Content Credentials (C2PA): a record of how the image was made, signed with a certificate. If the signature is valid and the image has not been changed since signing, the record decides the verdict. Unsigned AI labels in the metadata are also reported. If there is no such evidence, which is the case for any image that was shared through a messaging app, the pixels decide: the image is split into a grid of up to nine tiles at full resolution, each tile is scored by a CLIP-based detector, and the scores are averaged. The decision threshold was calibrated on 600 separate full-size images.</li>
+        <li><strong>This website.</strong> First the file's provenance is read. ChatGPT and a growing number of other generators and cameras attach Content Credentials (C2PA): a record of how the image was made, signed with a certificate. If the signature is valid and the image has not been changed since signing, the record decides the verdict. Unsigned AI labels in the metadata are also reported. If there is no such evidence, which is the case for any image that was shared through a messaging app, the pixels decide: the image is split into a grid of up to nine tiles at full resolution, each tile is scored by a CLIP-based detector, and the scores are averaged. The detector was trained on about 89,000 images: OpenFake (including GPT Image 1.5 and 2, Nano Banana Pro and Grok&rsquo;s Aurora), real photographs from 57 Android and iPhone models and other cameras, and ChatGPT and Gemini images, each also in a simulated WhatsApp-shared version. Its threshold was calibrated on separate images.</li>
       </ol>
     </section>
 

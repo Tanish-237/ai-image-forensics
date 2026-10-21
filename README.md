@@ -37,6 +37,8 @@ This project is a forensic study of AI-generated images. Given only the pixels, 
 | E6b | 100 OpenFake images (50 real, 50 AI) sent through WhatsApp | ROC-AUC falls from 0.67–0.70 to **0.46–0.58** (near chance); more false alarms *and* more missed fakes |
 | E7 | Retrain M1/M2 on OpenFake's training split (~4,000 images, 72 generators from 2022–25), test on E6 images | OpenFake ROC-AUC: M1 0.751 → 0.877, **M2 0.720 → 0.945**; after WhatsApp M2 0.580 → 0.853; but GenImage AUC drops (M2 0.997 → 0.900) |
 | E8 | Full data (17,780 images), with and without blur/resize/JPEG augmentation; full-image tile analysis | M2 reaches **0.957** on OpenFake; augmentation did not help; full-image tiling raises AUC after WhatsApp from 0.846 to **0.933** but needs its own threshold |
+| E9 | Deployment detector: E8 data + OpenFake test files 4–12 (62,145 images incl. GPT Image 1.5/2, Nano Banana Pro, Aurora), as distributed and after a simulated WhatsApp share | ROC-AUC **0.999** on OpenFake files 0–2 (generators now seen); but calls only 45% of real phone photos real |
+| E10 | E9 + real photos from 57 phone models (Wikimedia Commons, Unsplash), other cameras, ChatGPT (GPT-4o) and Gemini (Nano Banana) images | **98%** of Android and iPhone photos called real; ChatGPT 97% and Gemini 99% detected; after WhatsApp ROC-AUC 0.992 |
 
 ## Repository layout
 

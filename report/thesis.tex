@@ -26,19 +26,32 @@ Ashish Meena (20223058)}
 AI image generators now produce photorealistic images, which raises a
 forensic question: was an image captured by a camera, or produced by a
 generative model, and if so, by which one? This project treats
-AI-generated image detection as a \emph{source identification} problem.
-The generator plays the role that a camera plays in classical media
-forensics, and it is expected to leave its own statistical fingerprint in
-the pixels. We evaluate detectors in four stages: real-versus-AI
-detection, generalization to generators unseen during training,
-robustness to common processing (JPEG compression, resizing, blur)
-and attribution to a specific generator.
+AI-generated image detection as a \emph{source identification} problem,
+in which the generator plays the role that a camera plays in classical
+media forensics. We compare three generations of detectors (a fine-tuned
+ResNet-50, frozen CLIP features with a linear classifier and the NPR
+forensic residual) on known and unseen generators, under JPEG
+compression, resizing and blur, and for attribution to a specific
+generator, and then test them on current generators and on images shared
+through WhatsApp.
 
-A pilot study on our own images shows why careful dataset design is
-essential. Real and AI images could be separated with 100\% accuracy
-using file properties alone, without any pixel analysis. After
-normalization, every such shortcut fell to chance level (50\%).
-% TODO: add main results (E1--E4) once experiments are complete.
+Careful data preparation proved essential. File properties alone
+separated our pilot images perfectly, and a detector trained on a
+popular benchmark without correction lost 19.9 percentage points
+(98.8\% to 78.9\%) once the AI images were compressed like the real
+ones. On de-biased data all detectors exceeded 96\% accuracy and
+attribution to one of seven sources reached 86.1\%. Detectors trained on
+2021--2023 generators fell to a ROC-AUC of 0.72--0.75 on 2024--2026
+generators and close to chance after WhatsApp sharing, while resizing
+and blur made real photographs look generated. Training on recent
+generators and analysing the whole image restored a ROC-AUC of 0.93 after
+sharing. A detector with a ROC-AUC of 0.999 on a benchmark still called
+most real phone and camera photographs AI-generated; adding real-world
+photographs from 57 phone models fixed this, and the final detector
+called 98\% of Android and iPhone photographs real while detecting 97\%
+of ChatGPT and 99\% of Gemini images. Our website combines this detector
+with a check of signed Content Credentials, which identified images
+downloaded from ChatGPT with certainty but are removed by sharing.
 
 \prefacesection{Acknowledgements}
 We thank our mentor, Dr. Anuja Dixit, for guidance throughout this project,
@@ -108,8 +121,12 @@ RQ4 & Can it identify \emph{which} generator produced an image? & Camera model i
         sent through WhatsApp before detection.
   \item Visualisations of generator fingerprints in the frequency domain
         and in the NPR residual.
-  \item A demo application in which users upload an image and see the
-        detector's prediction.
+  \item A deployment detector trained on current generators and on
+        real photographs from 57 phone models, and a measurement of how a
+        near-perfect benchmark score can hide a real-world failure.
+  \item A website that combines a check of signed Content Credentials
+        (C2PA) with full-image pixel analysis, and shows the evidence
+        behind each verdict.
 \end{itemize}
 
 % ==================================================================
@@ -156,7 +173,16 @@ down-sampled and up-sampled again, which removes most scene content and
 keeps these local traces. A shallow residual network (the first two
 stages of a ResNet-50) is then trained from scratch on the NPR
 representation instead of the raw image.
-% TODO: add further 2024--2026 methods after the literature review.
+
+\subsection*{Provenance records}
+A different approach records an image's origin when it is created. The
+C2PA specification~\cite{c2pa2025spec} defines \emph{Content
+Credentials}: a manifest embedded in the file that lists how the image
+was made (for example, created by a trained model) and is signed with a
+certificate, together with a hash of the image data. Such a record is
+reliable when present and intact, but it depends on the cooperation of
+the creating software and is removed by many platforms and editors, so
+it complements rather than replaces pixel-based detection.
 
 \section{Datasets and Dataset Bias}
 GenImage~\cite{zhu2023genimage} is a benchmark of about 1.33 million
@@ -355,6 +381,36 @@ We report four measures on the test set:
         not hidden by the overall average.
 \end{itemize}
 Misclassified images are inspected in the error analysis.
+
+\section{Web Application}
+\label{sec:web}
+The project website lets a user upload an image (JPEG, PNG, WebP or
+iPhone HEIC) and shows the verdict together with the evidence behind it.
+An upload is analysed in two steps:
+\begin{enumerate}
+  \item \textbf{Provenance.} The file's Content Credentials (C2PA
+        manifest) are read and verified against the official C2PA trust
+        list (Section~\ref{sec:c2pa}). A valid signed record stating
+        that a trained model created the image decides the verdict
+        ``AI-generated''; a trusted record of a camera capture decides
+        ``real photograph''. Unsigned AI labels in the metadata (the IPTC
+        digital source type, Stable Diffusion or ComfyUI generation
+        settings) also mark an image as generated. Camera EXIF tags are
+        shown but never used, because they are easy to edit.
+  \item \textbf{Pixels.} If no usable record exists, the image is covered
+        by an evenly spaced grid of up to $3\times3$ tiles of
+        $224\times224$ pixels at its original resolution (E8), each tile
+        is scored by the CLIP-based detector of E10, and the scores are
+        averaged. The score is rescaled so that the calibrated threshold
+        maps to 50\%, and the tile scores are drawn on the image.
+\end{enumerate}
+The backend is written in Python with FastAPI and runs on our own
+computer during demonstrations, at about 5--9 seconds per image on a
+laptop CPU; a static copy of the page with all experiment results is
+hosted on Hugging Face Spaces and connects to the backend through a
+temporary public link. Uploaded images are analysed in memory and not
+stored. The trained detectors are published in a Hugging Face model
+repository.
 
 % ==================================================================
 \chapter{Experimental Setup and Results Analysis}
@@ -1253,6 +1309,284 @@ show three findings.
         full-image scores.
 \end{enumerate}
 
+\section{Provenance Check: Content Credentials}
+\label{sec:c2pa}
+When we tested an early version of our website on images we had
+generated ourselves, the pixel detector missed both ChatGPT images. Their
+files, however, carried a different kind of evidence. Both contained a
+\emph{Content Credentials} record as defined by the C2PA
+specification~\cite{c2pa2025spec}: a manifest stored inside the file
+(in a \texttt{caBX} chunk of the PNG) that states how the image was made
+and is signed with an X.509 certificate. The manifest of each file
+contained:
+\begin{itemize}
+  \item the action \texttt{c2pa.created} with the software agent
+        ``ChatGPT'' (version ``gpt-image'') and the IPTC digital source
+        type \texttt{trainedAlgorithmicMedia}, the standard code for media
+        created by a trained model;
+  \item the signer ``OpenAI OpCo, LLC'' and a signing time;
+  \item a hash of the image data, so that any change to the pixels after
+        signing can be detected.
+\end{itemize}
+We verified both files with the open-source C2PA library
+(\texttt{c2pa-python}) against the official C2PA trust list of
+certificate authorities. Both were reported as \emph{Trusted}: the
+signature was valid, the certificate chained to a listed authority and
+the image hash matched. When we changed a single pixel and kept the
+manifest, the result changed to \emph{Invalid} with the message that the
+hashes did not match. The iPhone photograph (HEIC) carried no manifest,
+only ordinary EXIF tags (``Apple iPhone 17''), and the copies of all
+images received through WhatsApp carried no metadata at all.
+
+Content Credentials are therefore strong evidence when present, but they
+are easily lost: WhatsApp, screenshots and most editors remove them, and
+a missing record says nothing about an image. The two kinds of evidence
+complement each other, and our website uses both
+(Section~\ref{sec:web}): a valid signed record decides the verdict; when
+there is none, the pixel detector decides. A record that claims a camera
+capture is accepted only from a signer on the trust list, because anyone
+can sign a false claim with a self-made certificate.
+
+\section{A Detector for Current Generators (E9)}
+\label{sec:e9}
+E6 to E8 trained only on OpenFake's training split, which leaves out the
+newest generators so that generalisation to unseen generators can be
+measured. For the website the goal is different: it should work as well
+as possible on images that people upload today. E9 therefore trains a
+\emph{deployment} detector on everything we can spare. OpenFake test
+files 4 to 12, which no earlier experiment used, contribute 62{,}145
+images (30{,}386 real from DOCCI and ImageNet, and 31{,}759 generated,
+including 3{,}845 GPT Image~1.5, 319 GPT Image~2, 284 Nano Banana Pro and
+190 Aurora images), in addition to the E8 training data. Test file 3 is
+used to calibrate the threshold and files 0 to 2, the images of E6, for
+testing.
+
+Each training image is prepared the way the website sees it: up to four
+tiles from the website's $3\times3$ grid at original resolution, once as
+distributed and once after a simulated WhatsApp share (longest side at
+most 1600 pixels, JPEG quality 80, as measured in E6). The detector is
+the same as M2: frozen CLIP features and logistic regression with
+balanced class weights, fitted on 445{,}112 tiles.
+
+The test generators are now \emph{seen} during training, so E9 measures
+the detection of known generators on new images, not generalisation.
+
+\begin{table}[h]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{ll|ccc|ccc}
+\toprule
+ & & \multicolumn{3}{c|}{\textbf{As distributed}} & \multicolumn{3}{c}{\textbf{After simulated share}}\\
+\textbf{Test set} & \textbf{Detector} & AUC & Real & AI & AUC & Real & AI\\
+\midrule
+OpenFake files 0--2 & E8 & 0.956 & 89.3 & 86.4 & 0.951 & 95.1 & 76.4\\
+ & E9 & \textbf{0.999} & 99.3 & 96.1 & \textbf{0.998} & 99.3 & 96.0\\
+\midrule
+ & & \multicolumn{3}{c|}{\textbf{Before WhatsApp}} & \multicolumn{3}{c}{\textbf{After WhatsApp}}\\
+E6 WhatsApp images & E8 & 0.953 & 88 & 92 & 0.933 & 94 & 58\\
+ & E9 & \textbf{0.998} & 98 & 96 & \textbf{0.997} & 98 & 96\\
+\bottomrule
+\end{tabular}
+\caption{E9: full-image ROC-AUC, real images called real (\%) and generated images detected (\%), each detector at its own calibrated threshold.}
+\label{tab:e9}
+\end{table}
+
+On OpenFake, E9 was almost perfect (Table~\ref{tab:e9}). After the
+simulated share it detected 90.0\% of GPT Image~2 images (E8: 66.7\%),
+97.8\% of GPT Image~1.5 (71.1\%), 97.3\% of Nano Banana Pro (67.1\%) and
+97.2\% of Aurora (85.9\%). On the real WhatsApp images of E6 it detected
+96\% of the generated images after sharing, against 58\% for E8.
+
+Our own images told a different story. The iPhone photograph received an
+AI score of 62\% and was called AI-generated, with six of its nine
+tiles above 80\%. All real images in OpenFake come from two collections,
+DOCCI and ImageNet, so the detector had learned what \emph{those}
+photographs look like; a 24-megapixel phone photograph, with its own
+sharpening and noise reduction, lay outside that range. E10 measures how
+large this problem is and addresses it.
+
+\section{Real-World Photographs and Current Generators (E10)}
+\label{sec:e10}
+E10 adds four public sources that OpenFake does not cover
+(Table~\ref{tab:e10-data}). Phone photographs come from Wikimedia
+Commons~\cite{wikimediacommons}, whose ``Taken with \ldots'' categories are
+filled from EXIF data: 30 JPEG photographs of 3 to 26 megapixels (normal
+photo modes, no panoramas) for each of 57 phone models from 2019 to 2026,
+47 Android and 10 iPhone models. Unsplash Lite~\cite{unsplashlite}
+contributes photographs whose EXIF data names a phone maker, mostly older
+iPhones, and 1{,}500 photographs from other cameras. Generated images come
+from ShareGPT-4o-Image~\cite{chen2025sharegpt4o} (ChatGPT, GPT-4o) and
+from a public collection of Gemini~2.5 Flash Image (Nano Banana)
+images~\cite{bitmindnanobanana}. Only CLIP features were kept; no image
+is redistributed.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lrrrr}
+\toprule
+\textbf{Source} & \textbf{Images} & \textbf{Train} & \textbf{Calibration} & \textbf{Test}\\
+\midrule
+Commons, Android phones (47 models) & 1{,}409 & 995 & 150 & 264\\
+Commons, iPhones (10 models) & 300 & 184 & 66 & 50\\
+Unsplash, phones\footnotemark & 858 & 617 & 147 & 94\\
+Unsplash, other cameras & 1{,}500 & 1{,}053 & 222 & 225\\
+ChatGPT (GPT-4o) & 2{,}000 & 1{,}422 & 278 & 300\\
+Gemini (Nano Banana) & 2{,}000 & 1{,}393 & 305 & 302\\
+\bottomrule
+\end{tabular}
+\caption{E10: new data sources. Commons and Unsplash were split by photographer, so test photographs come from photographers not seen in training.}
+\label{tab:e10-data}
+\end{table}
+\footnotetext{Including about 35 photographs from Samsung NX system cameras, which our first filter counted as phones.}
+
+The new training tiles (45{,}312) are few next to the more than
+445{,}000 OpenFake tiles, so they were weighted to provide 30\% of the training signal. The
+threshold was calibrated on the OpenFake calibration images together with
+the new calibration images. E8, E9 and E10 were then compared on the
+held-out test images of every source.
+
+\begin{table}[h]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{l|ccc|ccc}
+\toprule
+ & \multicolumn{3}{c|}{\textbf{As distributed}} & \multicolumn{3}{c}{\textbf{After simulated share}}\\
+\textbf{Test images} & E8 & E9 & E10 & E8 & E9 & E10\\
+\midrule
+\multicolumn{7}{l}{\emph{Real photographs called real (\%)}}\\
+Android phones (264) & 96.2 & 86.0 & \textbf{98.1} & 95.1 & 87.5 & \textbf{99.2}\\
+iPhones (50) & 96.0 & 84.0 & \textbf{98.0} & \textbf{98.0} & 88.0 & 96.0\\
+Unsplash phones (94) & 96.8 & 44.7 & \textbf{98.9} & 86.2 & 41.5 & \textbf{96.8}\\
+Other cameras (225) & 94.7 & 28.0 & \textbf{98.2} & 61.8 & 12.4 & \textbf{79.6}\\
+OpenFake real (410) & 89.3 & 99.3 & \textbf{99.5} & 95.1 & 99.3 & \textbf{99.8}\\
+\midrule
+\multicolumn{7}{l}{\emph{Generated images detected (\%)}}\\
+ChatGPT, GPT-4o (300) & 78.0 & 94.0 & \textbf{97.3} & 53.3 & \textbf{94.0} & 93.0\\
+Gemini, Nano Banana (302) & \textbf{99.7} & 99.0 & 98.7 & 96.7 & \textbf{99.0} & 95.7\\
+OpenFake generated (1{,}609) & 86.4 & \textbf{96.1} & 93.0 & 76.4 & \textbf{96.0} & 88.6\\
+\bottomrule
+\end{tabular}
+\caption{E10: correct decisions on held-out test images, each detector at its own calibrated threshold.}
+\label{tab:e10}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/e10_real_world.png}
+\caption{E10: correct decisions of E8, E9 and E10 per test source, as distributed (top) and after a simulated WhatsApp share (bottom).}
+\label{fig:e10}
+\end{figure}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lrcc}
+\toprule
+\textbf{Brand} & \textbf{Test photos} & \textbf{As distributed} & \textbf{After share}\\
+\midrule
+Samsung & 71 & 100.0 & 100.0\\
+Xiaomi, Redmi, Poco & 61 & 100.0 & 100.0\\
+iPhone & 50 & 98.0 & 96.0\\
+OnePlus & 38 & 100.0 & 100.0\\
+Google Pixel & 31 & 100.0 & 93.5\\
+Vivo & 30 & 100.0 & 100.0\\
+Realme & 27 & 81.5 & 100.0\\
+Oppo, Huawei, Infinix & 6 & 100.0 & 100.0\\
+\bottomrule
+\end{tabular}
+\caption{E10: Commons phone photographs called real (\%) per brand.}
+\label{tab:e10-brands}
+\end{table}
+
+Tables~\ref{tab:e10} and~\ref{tab:e10-brands} and
+Figure~\ref{fig:e10} show four findings.
+
+\begin{enumerate}
+  \item \textbf{A near-perfect benchmark score hid a real-world failure.}
+        E9 reached a ROC-AUC of 0.999 on OpenFake but called only 44.7\%
+        of the Unsplash phone photographs and 28.0\% of the other camera
+        photographs real. Over all new test sources its ROC-AUC was
+        0.921. A detector is only as good as the range of its
+        \emph{real} training images, and two photograph collections are
+        not enough.
+  \item \textbf{Adding real-world photographs fixed it without losing
+        the new generators.} E10 called 98--99\% of the phone and camera
+        photographs real, for Android phones and iPhones alike, and still
+        detected 97.3\% of the GPT-4o and 98.7\% of the Nano Banana
+        images. Its ROC-AUC on the new test sources was 0.998 (0.981
+        after the simulated share), and on the E6 WhatsApp images 0.992
+        after sharing (96\% of real images called real, 96\% of
+        generated images detected).
+  \item \textbf{The result holds across phone brands.} Every brand with
+        at least 30 test photographs had 98--100\% of its photographs
+        called real as distributed, and at least 93.5\% after the
+        simulated share. Realme was the weakest (81.5\%, 27 photographs).
+  \item \textbf{The improvement has a cost on the OpenFake generators.}
+        Detection of OpenFake's generated images fell from 96.1\% (E9) to
+        93.0\%, and after the simulated share from 96.0\% to 88.6\%; the
+        GPT Image~2 rate after sharing fell slightly, from 90.0\% to
+        88.9\%. E10 calls more images real, which is the right trade for
+        a public tool, where wrongly accusing a genuine photograph is the
+        more harmful error (E3).
+\end{enumerate}
+
+On our own five images, E10 called the iPhone photograph and its
+WhatsApp copy real (AI scores 28\% and 24\%) and gave both ChatGPT PNG
+files scores above the threshold (57\% and 63\%), but the ChatGPT image
+received through WhatsApp was still missed (23\%).
+
+\section{Error Analysis}
+\label{sec:errors}
+Table~\ref{tab:errors} collects the cases where the final detector (E10)
+still fails most often, from the experiments above.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{p{4.3cm}cp{6.4cm}}
+\toprule
+\textbf{Case} & \textbf{Correct (\%)} & \textbf{Likely reason}\\
+\midrule
+Frames (OpenFake), after share & 57.7 & a generator with few training images (176), whose images look photographic\\
+Seedream 5.0, as distributed & 75.0 & 263 training images; detected more often after the simulated share (91.7\%)\\
+Ideogram 2.0, after share & 77.9 & 187 training images; many show text and graphic design, unlike most training images\\
+Other-camera photographs, after share & 79.6 & edited, high-quality photographs; resizing removes the sensor noise that marks them as real (E3)\\
+Recraft v2, after share & 77.4 & few training images (193)\\
+Realme phones, as distributed & 81.5 & strong in-phone processing; only 27 test photographs\\
+Our ChatGPT image after WhatsApp & missed & a single image; its Content Credentials were removed and the re-compressed pixels scored 23\%\\
+\bottomrule
+\end{tabular}
+\caption{Weak spots of the final detector (E10).}
+\label{tab:errors}
+\end{table}
+
+Across all experiments, four patterns explain most of the errors:
+\begin{enumerate}
+  \item \textbf{Unfamiliar real photographs are called generated.}
+        Resized or blurred photographs (E3), DOCCI photographs for the
+        GenImage-trained detectors (E6) and phone photographs for E9 were
+        all flagged as AI. Smooth images without sensor noise look
+        generated to every detector we trained, and the remedy that
+        worked was more varied real training data (E10).
+  \item \textbf{Generators with few training images are missed.} The
+        weakest generators in E10 had fewer than 300 training images
+        each, and in E6 every generator was unseen. Detection of a
+        generator depends mainly on whether it, or a close relative, was
+        in the training data (E2, E6, E7).
+  \item \textbf{Processing hides generator traces.} JPEG compression,
+        resizing and WhatsApp sharing lowered detection of generated
+        images in E3, E6 and E8 and, to a lesser degree, in E10.
+  \item \textbf{Scores shift before rankings do.} In E2, E3, E6 and E8,
+        ROC-AUC stayed much higher than accuracy: the detectors still
+        ranked generated images above real ones, but processing or new
+        generators moved all scores across the threshold. Calibrating the
+        threshold on data like the deployment data (E8, E9, E10) recovered
+        most of the accuracy.
+\end{enumerate}
+
 \section{Visualising Generator Fingerprints}
 A single image does not reveal a generator's traces because the scene
 dominates. Following the logic of camera fingerprinting, we removed the
@@ -1327,8 +1661,82 @@ Mean $|$NPR$|$ & 9.63 & 5.79 & 3.60 & 5.05 & 8.55 & 7.15 & 9.03\\
 
 % ==================================================================
 \chapter{Conclusion and Future Work}
-% TODO: write after E1--E4.
-\textit{To be completed.}
+\label{chap:conclusion}
+
+\section{Answers to the Research Questions}
+\begin{description}
+  \item[RQ1: real versus AI on known generators.] Yes. On de-biased data
+        all three detectors reached 96.5--97.5\% accuracy and a ROC-AUC
+        of at least 0.994, and their combination 98.8\% (E1). This holds
+        only when the data is fair: trained on the uncorrected benchmark,
+        the same network learned that JPEG traces mean ``real'' and lost
+        19.9 percentage points on fairly prepared images (E5).
+  \item[RQ2: unseen generators.] Only partly. Trained on one generator,
+        the detectors caught 55--80\% of five others (E2), and detectors
+        trained on 2021--2023 generators reached a ROC-AUC of only
+        0.72--0.75 on 2024--2026 generators; ChatGPT's GPT Image~2 was
+        detected 13.5--34.2\% of the time (E6). Frozen CLIP features
+        generalised best. Most errors were threshold errors: unseen
+        generated images were still ranked above real ones but scored
+        below the threshold. Training data from recent generators closed
+        most of the gap (ROC-AUC 0.957, E8).
+  \item[RQ3: processing.] Processing is the main practical weakness.
+        Resizing and blur made real photographs look generated (at half
+        size only 1--6\% were called real, E3), and a single WhatsApp
+        share brought every detector close to chance (E6). Recent
+        training data, full-image analysis and a calibrated threshold
+        restored a ROC-AUC of 0.93 after WhatsApp (E8), and the final
+        detector reached 0.99 (E10), although with the test generators
+        seen in training.
+  \item[RQ4: attribution.] Yes for the generators seen in training: a
+        fine-tuned ResNet-50 named the correct one of seven sources for
+        86.1\% of images (chance 14.3\%), with most confusion between
+        SD15 and Wukong (E4). Each generator also showed a visible,
+        averaged frequency fingerprint.
+\end{description}
+
+Two further lessons came from testing on images we made ourselves. A
+benchmark score is not a guarantee: a detector with a ROC-AUC of 0.999
+on OpenFake called most real phone photographs generated, because all of
+its real training images came from two photo collections; real-world
+photographs from 57 phone models fixed this (E10). And pixels are not the
+only evidence: images downloaded from ChatGPT carry signed Content
+Credentials that identify them with certainty, but sharing removes them,
+so a pixel detector remains necessary.
+
+\section{Limitations}
+\begin{itemize}
+  \item The final detector (E9, E10) was trained on the generators it was
+        tested on; its results measure detection of known generators on
+        new images, not generalisation, which E2 and E6 measure.
+  \item Some current generators had few training images (319 for GPT
+        Image~2, 190 for Grok's Aurora), and new generators appear every
+        few months; E6 shows how quickly a detector becomes outdated.
+  \item WhatsApp was tested with 100 real image pairs and otherwise
+        simulated by resizing and JPEG compression; other platforms
+        process images differently.
+  \item Attribution covers only the six GenImage generators.
+  \item Each configuration was trained once with a fixed random seed,
+        so small differences between methods may not be significant.
+  \item Our own test images are few; a single ChatGPT image shared
+        through WhatsApp was still missed by the final detector.
+\end{itemize}
+
+\section{Future Work}
+\begin{itemize}
+  \item Continual updating: collect images from new generators as they
+        are released and retrain, which with frozen CLIP features takes
+        minutes once the features are computed.
+  \item Attribution of current generators (ChatGPT, Gemini, Grok,
+        Midjourney) from OpenFake's labels, extending E4.
+  \item A larger test set collected by ourselves, with images generated
+        and photographed by many people and shared through several
+        platforms.
+  \item Combining evidence: Content Credentials, invisible watermarks
+        where detection tools become available, and pixel analysis.
+  \item Robustness to deliberate attacks, such as adding noise or
+        re-photographing a screen, which this project did not test.
+\end{itemize}
 
 \bibliographystyle{acm}
 \bibliography{references}
