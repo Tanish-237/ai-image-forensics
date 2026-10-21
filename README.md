@@ -34,7 +34,8 @@ This project is a forensic study of AI-generated images. Given only the pixels, 
 | E3 | JPEG, resizing and blur applied to the test set (no retraining) | Real photos get flagged as fake: at half size only 1–6% of real photos are called real. NPR is the most JPEG-sensitive. |
 | E4 | Which of 7 sources made the image? (chance 14.3%) | CLIP + LR 80.0%, **fine-tuned ResNet-50 86.1%**; most confusion between SD15 and Wukong |
 | E6 | Same detectors on 2024–26 generators (OpenFake: GPT Image 1.5/2, Midjourney 7, Flux.2, Nano Banana Pro, …) | ROC-AUC falls from 0.99+ to **0.72–0.75**; GPT Image 2 detected at only 14–34% |
-| E6b, E7 | WhatsApp sharing, training on 2026 data | In progress |
+| E6b | 100 OpenFake images (50 real, 50 AI) sent through WhatsApp | ROC-AUC falls from 0.67–0.70 to **0.46–0.58** (near chance); more false alarms *and* more missed fakes |
+| E7 | Training on 2026 data | In progress |
 
 ## Repository layout
 

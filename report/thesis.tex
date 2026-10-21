@@ -1021,8 +1021,57 @@ earliest. Because OpenFake images are larger than GenImage images, the
 same $224\times224$ crop covers a smaller part of the scene.
 
 \subsection*{Sharing through WhatsApp}
-% TODO: before/after WhatsApp on 100 images (50 real, 50 generated).
-\textit{To be completed.}
+Images are often seen only after being shared through a messaging app.
+We selected 100 of the OpenFake files: 25 DOCCI and 25 ImageNet
+photographs and 10 images from each of GPT Image 1.5, GPT Image 2,
+Midjourney 7, Nano Banana Pro and Flux.2 Klein. They were sent through
+WhatsApp Desktop as ordinary photos at standard quality, and the
+received copies were collected from the application's media folder.
+WhatsApp renamed every file, so each received image was matched to its
+original by comparing $32\times32$ greyscale thumbnails with an optimal
+one-to-one assignment; all 100 were matched.
+
+WhatsApp converted every image to JPEG at an estimated quality of 80 and
+reduced images larger than 1600 pixels to 1600 pixels on the longer
+side, which affected the DOCCI photographs and some Nano Banana Pro
+images. Both versions of each image were cropped and scored in the same
+way (Figure~\ref{fig:e6-whatsapp}).
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/e6_whatsapp.png}
+\caption{E6: the same 100 images (50 real, 50 generated) before and after sharing through WhatsApp.}
+\label{fig:e6-whatsapp}
+\end{figure}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lcc|cc|cc}
+\toprule
+ & \multicolumn{2}{c|}{\textbf{Real called real}} & \multicolumn{2}{c|}{\textbf{AI detected}} & \multicolumn{2}{c}{\textbf{ROC-AUC}}\\
+ & before & after & before & after & before & after\\
+\midrule
+M1 & 90\% & 76\% & 36\% & 34\% & 0.680 & 0.530\\
+M2 & 60\% & 54\% & 60\% & 50\% & 0.671 & 0.580\\
+M3 & 80\% & 60\% & 46\% & 34\% & 0.692 & 0.459\\
+M4 & 68\% & 56\% & 60\% & 48\% & 0.701 & 0.533\\
+\bottomrule
+\end{tabular}
+\caption{E6: detector results on the 100 images before and after WhatsApp.}
+\label{tab:e6-whatsapp}
+\end{table}
+
+Sharing made every detector worse on both classes
+(Table~\ref{tab:e6-whatsapp}). ROC-AUC fell from 0.67--0.70 to
+0.46--0.58, close to chance; M3, which depends on neighbouring-pixel
+differences, fell below 0.5. More real photographs were labelled
+generated (for example 80\% to 60\% called real by M3), and fewer
+generated images were detected (for M3, 46\% to 34\%). The result
+combines the two effects measured in E3, re-compression and resizing,
+in a single everyday operation. With 50 images per class, each
+percentage has an uncertainty of several points, so per-generator
+results from this test are not interpreted.
 
 \section{Training on Current Generators (E7)}
 % TODO: train on an OpenFake training subset; test on GenImage and on OpenFake's held-out generators.
