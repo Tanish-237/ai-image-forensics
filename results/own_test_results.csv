@@ -1,0 +1,63 @@
+app,device,cond,file,fmt,size,verdict,by,pixel,cred
+chatgpt,desktop,WhatsApp,chatgpt/Whatsapp sent and downloaded/desktop1.jpeg,JPEG,1536x1024,AI-generated,pixels,53.1,
+chatgpt,desktop,WhatsApp of screenshot,chatgpt/Whatsapp sent and downloaded/desktop1_screenshot.jpeg,JPEG,1600x1067,Real photograph,pixels,49.1,
+chatgpt,desktop,WhatsApp,chatgpt/Whatsapp sent and downloaded/desktop2.jpeg,JPEG,1448x1086,AI-generated,pixels,77.1,
+chatgpt,desktop,WhatsApp of screenshot,chatgpt/Whatsapp sent and downloaded/desktop2_screenshot.jpeg,JPEG,1600x1182,AI-generated,pixels,66.9,
+chatgpt,phone,WhatsApp,chatgpt/Whatsapp sent and downloaded/phone1.jpeg,JPEG,1536x1024,AI-generated,pixels,65.9,
+chatgpt,phone,WhatsApp of screenshot,chatgpt/Whatsapp sent and downloaded/phone1_screenshot.jpeg,JPEG,1206x793,AI-generated,pixels,57.5,
+chatgpt,phone,WhatsApp,chatgpt/Whatsapp sent and downloaded/phone2.jpeg,JPEG,1448x1086,AI-generated,pixels,82.2,
+chatgpt,phone,WhatsApp of screenshot,chatgpt/Whatsapp sent and downloaded/phone2_screenshot.jpeg,JPEG,1206x918,AI-generated,pixels,83.2,
+chatgpt,desktop,original,chatgpt/desktop1.png,PNG,1536x1024,AI-generated,credentials,69.6,"Trusted:ChatGPT gpt-image:OpenAI OpCo, LLC:trainedAlgorithmicMedia"
+chatgpt,desktop,screenshot,chatgpt/desktop1_screenshot.png,PNG,1676x1118,Real photograph,pixels,43.8,
+chatgpt,desktop,original,chatgpt/desktop2.png,PNG,1448x1086,AI-generated,credentials,77.7,"Trusted:ChatGPT gpt-image:OpenAI OpCo, LLC:trainedAlgorithmicMedia"
+chatgpt,desktop,screenshot,chatgpt/desktop2_screenshot.png,PNG,2342x1730,AI-generated,pixels,71.6,
+chatgpt,phone,original,chatgpt/phone1.PNG,PNG,1536x1024,AI-generated,credentials,72.6,"Trusted:ChatGPT gpt-image:OpenAI OpCo, LLC:trainedAlgorithmicMedia"
+chatgpt,phone,screenshot,chatgpt/phone1_screenshot.jpg,JPEG,1206x793,AI-generated,pixels,83.8,
+chatgpt,phone,original,chatgpt/phone2.PNG,PNG,1448x1086,AI-generated,credentials,89.5,"Trusted:ChatGPT gpt-image:OpenAI OpCo, LLC:trainedAlgorithmicMedia"
+chatgpt,phone,screenshot,chatgpt/phone2_screenshot.jpg,JPEG,1206x918,AI-generated,pixels,96.5,
+gemini,desktop,WhatsApp,gemini/Whatsapp/desktop1.jpeg,JPEG,1600x894,AI-generated,pixels,99.1,
+gemini,desktop,WhatsApp of screenshot,gemini/Whatsapp/desktop1_screenshot.jpeg,JPEG,1600x893,AI-generated,pixels,98.7,
+gemini,desktop,WhatsApp,gemini/Whatsapp/desktop2.jpeg,JPEG,1600x893,Real photograph,pixels,49.5,
+gemini,desktop,WhatsApp of screenshot,gemini/Whatsapp/desktop2_screenshot.jpeg,JPEG,1600x884,Real photograph,pixels,49.7,
+gemini,desktop,WhatsApp,gemini/Whatsapp/desktop3.jpeg,JPEG,1600x893,Real photograph,pixels,46.0,
+gemini,desktop,WhatsApp of screenshot,gemini/Whatsapp/desktop3_screenshot.jpeg,JPEG,1600x887,Real photograph,pixels,47.7,
+gemini,desktop,WhatsApp,gemini/Whatsapp/desktop4.jpeg,JPEG,1600x893,AI-generated,pixels,89.5,
+gemini,desktop,WhatsApp of screenshot,gemini/Whatsapp/desktop4_screenshot.jpeg,JPEG,1600x896,AI-generated,pixels,93.5,
+gemini,phone,WhatsApp,gemini/Whatsapp/phone1.jpeg,JPEG,2752x1536,AI-generated,pixels,81.2,
+gemini,phone,WhatsApp of screenshot,gemini/Whatsapp/phone1_ss.jpeg,JPEG,1206x731,AI-generated,pixels,92.5,
+gemini,phone,WhatsApp,gemini/Whatsapp/phone2.jpeg,JPEG,2752x1536,Real photograph,pixels,43.7,
+gemini,phone,WhatsApp,gemini/Whatsapp/phone3.jpeg,JPEG,2752x1536,AI-generated,pixels,61.4,
+gemini,phone,WhatsApp of screenshot,gemini/Whatsapp/phone3_ss.jpeg,JPEG,1206x2622,AI-generated,pixels,80.0,
+gemini,phone,WhatsApp,gemini/Whatsapp/phone4.jpeg,JPEG,2752x1536,AI-generated,pixels,85.1,
+gemini,phone,WhatsApp of screenshot,gemini/Whatsapp/phone4_ss.jpeg,JPEG,1206x724,AI-generated,pixels,98.5,
+gemini,desktop,original,gemini/desktop1.png,PNG,2752x1536,AI-generated,credentials,98.9,"Trusted:Google C2PA Core Generator Library:Google LLC:composite,trainedAlgorithmicMedia"
+gemini,desktop,screenshot,gemini/desktop1_screenshot.png,PNG,2686x1500,AI-generated,pixels,98.1,
+gemini,desktop,original,gemini/desktop2.png,PNG,2752x1536,AI-generated,credentials,39.8,"Trusted:Google C2PA Core Generator Library:Google LLC:composite,trainedAlgorithmicMedia"
+gemini,desktop,screenshot,gemini/desktop2_screenshot.png,PNG,3130x1730,Real photograph,pixels,41.3,
+gemini,desktop,original,gemini/desktop3.png,PNG,2752x1536,AI-generated,credentials,33.5,"Trusted:Google C2PA Core Generator Library:Google LLC:composite,trainedAlgorithmicMedia"
+gemini,desktop,screenshot,gemini/desktop3_screenshot.png,PNG,3106x1722,Real photograph,pixels,21.8,
+gemini,desktop,original,gemini/desktop4.png,PNG,2752x1536,AI-generated,credentials,82.3,"Trusted:Google C2PA Core Generator Library:Google LLC:composite,trainedAlgorithmicMedia"
+gemini,desktop,screenshot,gemini/desktop4_screenshot.png,PNG,3120x1748,AI-generated,pixels,86.2,
+gemini,phone,original,gemini/phone1.PNG,PNG,2752x1536,AI-generated,credentials,78.3,"Trusted:Google C2PA Core Generator Library:Google LLC:algorithmicallyEnhanced,composite,trainedAlgorithmicMedia"
+gemini,phone,screenshot,gemini/phone1_ss.jpg,JPEG,1206x731,AI-generated,pixels,95.6,
+gemini,phone,original,gemini/phone2.PNG,PNG,2752x1536,AI-generated,credentials,47.0,"Trusted:Google C2PA Core Generator Library:Google LLC:algorithmicallyEnhanced,composite,trainedAlgorithmicMedia"
+gemini,phone,original,gemini/phone3.PNG,PNG,2752x1536,AI-generated,credentials,67.1,"Trusted:Google C2PA Core Generator Library:Google LLC:algorithmicallyEnhanced,composite,trainedAlgorithmicMedia"
+gemini,phone,screenshot,gemini/phone3_ss.PNG,PNG,1206x2622,AI-generated,pixels,78.1,
+gemini,phone,original,gemini/phone4.PNG,PNG,2752x1536,AI-generated,credentials,82.4,"Trusted:Google C2PA Core Generator Library:Google LLC:algorithmicallyEnhanced,composite,trainedAlgorithmicMedia"
+gemini,phone,screenshot,gemini/phone4_ss.jpg,JPEG,1206x724,AI-generated,pixels,99.4,
+grok,desktop,WhatsApp,grok/Whatsapp/desktop1.jpeg,JPEG,784x1168,AI-generated,pixels,98.5,
+grok,desktop,WhatsApp of screenshot,grok/Whatsapp/desktop1_screenshot.jpeg,JPEG,1102x1600,AI-generated,pixels,95.2,
+grok,desktop,WhatsApp,grok/Whatsapp/desktop2.jpeg,JPEG,784x1168,AI-generated,pixels,96.8,
+grok,desktop,WhatsApp of screenshot,grok/Whatsapp/desktop2_screenshot.jpeg,JPEG,1092x1600,AI-generated,pixels,88.4,
+grok,phone,WhatsApp,grok/Whatsapp/phone1.jpeg,JPEG,784x1168,AI-generated,pixels,98.9,
+grok,phone,WhatsApp of screenshot,grok/Whatsapp/phone1_ss.jpeg,JPEG,1206x1684,AI-generated,pixels,93.2,
+grok,phone,WhatsApp,grok/Whatsapp/phone2.jpeg,JPEG,784x1168,AI-generated,pixels,96.0,
+grok,phone,WhatsApp of screenshot,grok/Whatsapp/phone2_ss.jpeg,JPEG,1206x1734,AI-generated,pixels,83.2,
+grok,desktop,original,grok/desktop1.jpg,JPEG,784x1168,AI-generated,credentials,99.6,Valid:Grok Imagine:Self-signed ephemeral certificate (Content Authenticity SDK) -- LOCAL USE ONLY:trainedAlgorithmicMedia
+grok,desktop,screenshot,grok/desktop1_screenshot.png,PNG,1180x1714,AI-generated,pixels,98.1,
+grok,desktop,original,grok/desktop2.jpg,JPEG,784x1168,AI-generated,credentials,99.2,Valid:Grok Imagine:Self-signed ephemeral certificate (Content Authenticity SDK) -- LOCAL USE ONLY:trainedAlgorithmicMedia
+grok,desktop,screenshot,grok/desktop2_screenshot.png,PNG,1156x1694,AI-generated,pixels,90.0,
+grok,phone,original,grok/phone1.JPG,JPEG,784x1168,AI-generated,pixels,99.6,
+grok,phone,screenshot,grok/phone1_ss.jpg,JPEG,1206x1684,AI-generated,pixels,97.5,
+grok,phone,original,grok/phone2.JPG,JPEG,784x1168,AI-generated,pixels,99.1,
+grok,phone,screenshot,grok/phone2_ss.jpg,JPEG,1206x1734,AI-generated,pixels,99.0,

@@ -153,6 +153,11 @@
           <h3>ChatGPT signs its images, until they are shared</h3>
           <p>Images downloaded from ChatGPT carry Content Credentials (C2PA): a record that says &ldquo;created by ChatGPT, a trained model&rdquo;, signed by OpenAI and tied to the exact pixels. We verified them against the official C2PA trust list; changing a single pixel breaks the signature. WhatsApp removed the record from the ChatGPT image we sent, so the pixel detector is still needed.</p>
         </article>
+        <article class="card wide">
+          <span class="tag">Our own test</span>
+          <h3>53 of 62 of our own AI images caught, including screenshots and WhatsApp copies</h3>
+          <p>After training was finished we generated 16 new images with ChatGPT, Gemini and Grok, on phones and on a desktop, and tested each one as downloaded, as a screenshot, after WhatsApp and as a screenshot sent through WhatsApp. Every original was identified, mostly from its Content Credentials (ChatGPT and Gemini sign their images; Grok signed only the desktop downloads, with an unverifiable self-signed certificate). Without that record the pixel detector still caught 50 of 62 files: all 16 from Grok and 14 of 16 from ChatGPT. Its weak spot was photorealistic outdoor scenes from Gemini, such as a street, a lake at sunset and a lion.</p>
+        </article>
       </div>
     </section>
 
