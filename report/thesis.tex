@@ -196,6 +196,7 @@ ImageNet. Table~\ref{tab:inventory} summarises the inventory.
 \begin{table}[h]
 \centering
 \small
+\setlength{\tabcolsep}{4pt}
 \begin{tabular}{lrrlrr}
 \toprule
 \textbf{Source} & \textbf{Train} & \textbf{Val.} & \textbf{Format} & \textbf{Median size (px)} & \textbf{Median file (KB)}\\
@@ -268,6 +269,7 @@ final split sizes and confirms that the median quality factor is the same
 \begin{table}[h]
 \centering
 \small
+\setlength{\tabcolsep}{4pt}
 \begin{tabular}{lrrrcc}
 \toprule
 \textbf{Split} & \textbf{Real} & \textbf{Generated} & \textbf{Per generator} & \multicolumn{2}{c}{\textbf{JPEG quality (mean / median)}}\\
@@ -756,16 +758,17 @@ were trained:
 
 \begin{table}[h]
 \centering
-\small
+\footnotesize
+\setlength{\tabcolsep}{4pt}
 \begin{tabular}{lccccccc|cc}
 \toprule
- & \textbf{Real} & \textbf{ADM} & \textbf{GLIDE} & \textbf{MJ} & \textbf{SD15} & \textbf{VQDM} & \textbf{Wukong} & \textbf{Acc.} & \textbf{Macro-F1}\\
+ & \textbf{Real} & \textbf{ADM} & \textbf{GLIDE} & \textbf{MJ} & \textbf{SD15} & \textbf{VQDM} & \textbf{Wukong} & \textbf{Acc.} & \textbf{F1}\\
 \midrule
-A1 (CLIP) & \textbf{95.8} & 78.4 & 90.8 & 83.6 & 67.8 & 77.8 & 66.0 & 80.0 & 0.800\\
-A2 (ResNet-50) & 92.2 & \textbf{89.6} & \textbf{95.8} & \textbf{90.8} & \textbf{75.8} & \textbf{90.4} & \textbf{68.4} & \textbf{86.1} & \textbf{0.861}\\
+A1 CLIP & \textbf{95.8} & 78.4 & 90.8 & 83.6 & 67.8 & 77.8 & 66.0 & 80.0 & 0.800\\
+A2 ResNet & 92.2 & \textbf{89.6} & \textbf{95.8} & \textbf{90.8} & \textbf{75.8} & \textbf{90.4} & \textbf{68.4} & \textbf{86.1} & \textbf{0.861}\\
 \bottomrule
 \end{tabular}
-\caption{E4: per-class recall (\%), accuracy (\%) and macro-F1 for seven-way attribution. Chance level is 14.3\%.}
+\caption{E4: per-class recall (\%), accuracy (\%) and macro-F1 (F1) for seven-way attribution. Chance level is 14.3\%.}
 \label{tab:e4}
 \end{table}
 
@@ -847,6 +850,7 @@ Cleaned (E1) & Cleaned   & 0.965 & 0.994 & 0.994\\
 \begin{table}[h]
 \centering
 \small
+\setlength{\tabcolsep}{4pt}
 \begin{tabular}{llccccccc}
 \toprule
 \textbf{Trained} & \textbf{Tested} & \textbf{Real} & \textbf{ADM} & \textbf{GLIDE} & \textbf{MJ} & \textbf{SD15} & \textbf{VQDM} & \textbf{Wukong}\\
@@ -900,8 +904,124 @@ training distribution. A mismatch in processing therefore hurts in
 both directions, which motivates the robustness tests in E3.
 
 \section{Current Generators and Real-World Sharing (E6)}
-% TODO: OpenFake test images (GPT Image 1.5, Midjourney 7, Flux.2, ...) and DOCCI real photos,
-% before and after sharing through WhatsApp.
+\label{sec:e6}
+\subsection*{Generators released in 2024--2026}
+E6 tests the E1 detectors, without retraining, on generators that are
+two to four years newer than those in GenImage. We used the held-out
+test split of OpenFake v2~\cite{livernoche2025openfake}, whose generators
+do not appear in its own training split and whose real images come from
+DOCCI and ImageNet. Three of its thirteen test files were downloaded. We
+kept up to 200 images per generator (generators with fewer than 50
+usable images were left out) and 300 images from each real source,
+applied the same rules as before (no grayscale images, at least 224
+pixels per side) and the same 16-pixel-aligned $224\times224$ centre
+crop. In total 3{,}091 images were used.
+
+Unlike our cleaned GenImage data, OpenFake was used \emph{as
+distributed}, without re-compression. Its files differ in format: all
+Midjourney 7 images are PNG files, 64\% of GPT Image 1.5 images are PNG,
+and most other generators are JPEG files of quality 90--95. DOCCI
+photographs are $2048\times1536$ JPEG files of quality 75, while ImageNet
+photographs are about $500\times375$ pixels at quality 96. We recorded
+the format and estimated JPEG quality of every image
+(Table~\ref{tab:e6}).
+
+\begin{table}[h]
+\centering
+\scriptsize
+\begin{tabular}{lrrr|cccc}
+\toprule
+\textbf{Source} & \textbf{Released} & \textbf{$n$} & \textbf{PNG} & \textbf{M1} & \textbf{M2} & \textbf{M3} & \textbf{M4}\\
+\midrule
+DOCCI (real) & -- & 300 & 0\% & 63.3 & 23.7 & 47.7 & 30.7\\
+ImageNet (real) & -- & 300 & 0\% & 95.7 & 97.7 & 94.3 & 98.7\\
+\midrule
+Recraft v3 & 2024-10 & 200 & 0\% & 6.5 & 63.5 & 0.5 & 9.5\\
+Illustrious (fine-tunes) & 2024-12 & 200 & 20\% & 78.0 & 92.0 & 69.0 & 85.0\\
+Sora 2 (video) & 2025-03 & 135 & 10\% & 52.6 & 40.7 & 40.7 & 42.2\\
+Midjourney 7 & 2025-04 & 200 & 100\% & 37.0 & 72.0 & 41.0 & 57.5\\
+Veo 3 (video) & 2025-06 & 200 & 0\% & 89.0 & 90.0 & 90.0 & 98.5\\
+Wan 2.5 (video) & 2025-09 & 200 & 0\% & 79.5 & 91.5 & 87.5 & 97.0\\
+Nano Banana Pro & 2025-11 & 76 & 9\% & 81.6 & 84.2 & 80.3 & 90.8\\
+Z-Image Turbo & 2025-11 & 200 & 26\% & 85.0 & 90.0 & 84.5 & 91.5\\
+GPT Image 1.5 & 2025-12 & 200 & 64\% & 25.5 & 49.0 & 29.5 & 35.0\\
+Flux.2 Klein 9B & 2026-01 & 200 & 0\% & 20.0 & 69.5 & 90.0 & 84.5\\
+Seedream 5.0 & 2026-02 & 87 & 10\% & 52.9 & 21.8 & 16.1 & 12.6\\
+ERNIE-Image & 2026-04 & 77 & 56\% & 68.8 & 59.7 & 63.6 & 66.2\\
+ERNIE-Image Turbo & 2026-04 & 154 & 38\% & 70.8 & 57.1 & 58.4 & 60.4\\
+GPT Image 2 & 2026-04 & 111 & 20\% & 13.5 & 34.2 & 27.0 & 25.2\\
+Aurora & unknown & 71 & 100\% & 88.7 & 98.6 & 83.1 & 98.6\\
+Ideogram 2.0 & unknown & 70 & 100\% & 20.0 & 18.6 & 20.0 & 12.9\\
+Lumina & unknown & 110 & 100\% & 78.2 & 76.4 & 59.1 & 65.5\\
+\midrule
+\multicolumn{4}{l}{All generated images: detected (\%)} & 54.6 & 68.7 & 57.0 & 63.3\\
+\multicolumn{4}{l}{All real images: called real (\%)} & 79.5 & 60.7 & 71.0 & 64.7\\
+\multicolumn{4}{l}{ROC-AUC, all images} & 0.751 & 0.720 & 0.718 & 0.738\\
+\bottomrule
+\end{tabular}
+\caption{E6: correct rate (\%) on OpenFake per source. ``Released'' is the earliest date in OpenFake's metadata for that generator; PNG is the share of PNG files.}
+\label{tab:e6}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/e6_then_now.png}
+\caption{E6: the same detectors on the GenImage test set (E1) and on OpenFake.}
+\label{fig:e6-then-now}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/e6_openfake.png}
+\caption{E6: correct rate per OpenFake source, generators ordered by release date.}
+\label{fig:e6-sources}
+\end{figure}
+
+Table~\ref{tab:e6} and Figures~\ref{fig:e6-then-now}
+and~\ref{fig:e6-sources} show five findings.
+
+\begin{enumerate}
+  \item \textbf{Detectors trained on older generators fail on current
+        ones.} ROC-AUC fell from 0.994--0.999 on GenImage to 0.718--0.751
+        on OpenFake, and the detection rate on generated images from
+        96--100\% to 55--69\%. No method stayed above a ROC-AUC of 0.76.
+  \item \textbf{The two ChatGPT generators are among the hardest.} GPT
+        Image 1.5 was detected at 25.5--49.0\% and GPT Image 2 at
+        13.5--34.2\%, with ROC-AUC between 0.49 and 0.63, close to
+        chance. Ideogram 2.0, Seedream 5.0 and, for M1 and M3, Recraft v3
+        were similarly hard. Frames from video generators (Veo 3, Wan
+        2.5) and Z-Image Turbo were detected at 80--99\%.
+  \item \textbf{Newer is not uniformly harder.} Flux.2 Klein (January
+        2026) was detected at 90.0\% by M3, while Recraft v3 (October
+        2024) was detected at 0.5\% by the same method. Difficulty
+        depends on the generator rather than on its release date. M3 was
+        the only method to detect Flux.2 Klein reliably (ROC-AUC 0.899
+        against 0.623 for M1).
+  \item \textbf{One real-image source causes many false alarms.} 94--99\%
+        of ImageNet photographs were called real, but only 24--63\% of
+        DOCCI photographs. DOCCI images are four times larger and more
+        strongly compressed, so a $224\times224$ crop shows a magnified,
+        smoother region. E3 showed that loss of fine detail makes real
+        photographs look generated to these detectors; we consider this
+        the likely cause but did not test it separately.
+  \item \textbf{PNG files are detected less often than JPEG files of the
+        same generator.} For GPT Image 1.5, M1 detected 16.4\% of PNG
+        files and 42.3\% of JPEG files; for Illustrious 43.9\% and
+        86.8\%; for Z-Image Turbo 73.1\% and 89.2\%. Our detectors saw
+        only JPEG-compressed generated images during training, and E5
+        showed that uncompressed generated images are harder for them.
+        M2 was the least affected (Illustrious: 92.7\% PNG, 92.1\%
+        JPEG).
+\end{enumerate}
+
+The evaluation has limitations. Only three of the thirteen OpenFake test
+files were used, several generators have fewer than 200 images, and
+OpenFake's release dates vary within one generator, so we report the
+earliest. Because OpenFake images are larger than GenImage images, the
+same $224\times224$ crop covers a smaller part of the scene.
+
+\subsection*{Sharing through WhatsApp}
+% TODO: before/after WhatsApp on 100 images (50 real, 50 generated).
 \textit{To be completed.}
 
 \section{Training on Current Generators (E7)}

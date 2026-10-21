@@ -33,7 +33,8 @@ This project is a forensic study of AI-generated images. Given only the pixels, 
 | E5 | Train M1 on uncleaned data (fakes not JPEG-compressed), test on both versions | 98.8% on its own test set, **78.9%** once fakes are compressed like real photos (cleaned-data model: 96.5%) |
 | E3 | JPEG, resizing and blur applied to the test set (no retraining) | Real photos get flagged as fake: at half size only 1–6% of real photos are called real. NPR is the most JPEG-sensitive. |
 | E4 | Which of 7 sources made the image? (chance 14.3%) | CLIP + LR 80.0%, **fine-tuned ResNet-50 86.1%**; most confusion between SD15 and Wukong |
-| E6, E7 | 2026 generators, training on 2026 data | In progress |
+| E6 | Same detectors on 2024–26 generators (OpenFake: GPT Image 1.5/2, Midjourney 7, Flux.2, Nano Banana Pro, …) | ROC-AUC falls from 0.99+ to **0.72–0.75**; GPT Image 2 detected at only 14–34% |
+| E6b, E7 | WhatsApp sharing, training on 2026 data | In progress |
 
 ## Repository layout
 
