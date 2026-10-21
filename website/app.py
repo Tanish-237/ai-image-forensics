@@ -53,14 +53,31 @@ class Detector:
         self.clip_size = self.clip.config.image_size
         lr = np.load(folder / chosen["file"])
         self.w, self.b = torch.from_numpy(lr["coef"]).float().view(-1), float(lr["intercept"])
+        # E11: which generator family (ChatGPT, Gemini, Grok, ...), if the model repository has it
+        self.families = None
+        if "attributor" in config:
+            attr = np.load(folder / config["attributor"]["file"])
+            self.families = config["attributor"]["classes"]
+            self.attr_w, self.attr_b = torch.from_numpy(attr["coef"]).float(), torch.from_numpy(attr["intercept"]).float()
 
     @torch.no_grad()
-    def score_tiles(self, tiles):
+    def embed(self, tiles):
         x = torch.from_numpy(tiles).permute(0, 3, 1, 2).float() / 255
         if self.clip_size != SIZE:
             x = F.interpolate(x, size=self.clip_size, mode="bicubic", align_corners=False)
-        emb = F.normalize(self.clip(pixel_values=(x - CLIP_MEAN) / CLIP_STD).image_embeds, dim=1)
+        return F.normalize(self.clip(pixel_values=(x - CLIP_MEAN) / CLIP_STD).image_embeds, dim=1)
+
+    def score(self, emb):
         return torch.sigmoid(emb @ self.w + self.b).numpy()
+
+    def attribute(self, emb):
+        """Average family probabilities over the tiles; returns the AI families, most likely first."""
+        if self.families is None:
+            return None
+        p = torch.softmax(emb @ self.attr_w.T + self.attr_b, dim=1).mean(dim=0).numpy()
+        ai = {f: float(q) for f, q in zip(self.families, p) if f != "Real"}
+        total = sum(ai.values())
+        return [{"family": f, "probability": q / total} for f, q in sorted(ai.items(), key=lambda kv: -kv[1])]
 
 
 def calibrate(p, threshold):
@@ -115,7 +132,8 @@ async def analyze(file: UploadFile = File(...)):
 
     positions = tile_positions(*img.size)
     tiles = np.stack([np.asarray(img.crop((x, y, x + SIZE, y + SIZE))) for x, y in positions])
-    tile_scores = detector.score_tiles(tiles)
+    emb = detector.embed(tiles)
+    tile_scores = detector.score(emb)
     pixel_score = float(calibrate(tile_scores.mean(), detector.threshold))
 
     if origin["decision"] in ("ai", "ai_label"):
@@ -133,6 +151,7 @@ async def analyze(file: UploadFile = File(...)):
         "decided_by": decided_by,
         "provenance": origin,
         "pixels": {"name": detector.name, "probability_ai": pixel_score},
+        "families": detector.attribute(emb) if verdict == "AI-generated" else None,
         "tiles": [{"x": x, "y": y, "size": SIZE, "probability_ai": float(calibrate(p, detector.threshold))}
                   for (x, y), p in zip(positions, tile_scores)],
         "analysed_size": list(img.size),

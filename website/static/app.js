@@ -89,7 +89,7 @@ function evidenceItems(p) {
     }
   } else {
     items.push(["neutral", "\u2013", "No Content Credentials",
-      "ChatGPT and some other generators and cameras sign their images. Messaging apps, screenshots and most editors remove the signature."]);
+      "ChatGPT, Gemini and some other generators and cameras sign their images. Messaging apps, screenshots and most editors remove the signature."]);
   }
   if (p.label) items.push(["ai", "AI", "AI label in the metadata", `Unsigned ${p.label}.`]);
   if (p.camera) items.push(["neutral", "i", `Camera EXIF: ${p.camera}`, "Unsigned and easy to edit, so not used for the verdict."]);
@@ -119,6 +119,21 @@ function render(result) {
   document.getElementById("prob").textContent = `AI score ${percent(p)}`;
   document.getElementById("pixel-name").textContent =
     `${result.pixels.name}. Calibrated so that 50% is the decision line.`;
+
+  const familiesBlock = document.getElementById("families-block");
+  const families = document.getElementById("families");
+  families.innerHTML = "";
+  familiesBlock.hidden = !result.families;
+  for (const f of (result.families || []).slice(0, 3)) {
+    const li = document.createElement("li");
+    li.innerHTML = '<span></span><span class="value"></span><div class="track"><div class="fill"></div></div>';
+    li.children[0].textContent = f.family;
+    li.children[1].textContent = percent(f.probability);
+    const fill = li.querySelector(".fill");
+    fill.style.width = `${f.probability * 100}%`;
+    fill.style.background = getComputedStyle(document.documentElement).getPropertyValue("--ai").trim();
+    families.appendChild(li);
+  }
 
   document.getElementById("notes").textContent = result.notes.join(" ");
   const [w, h] = result.original_size;
