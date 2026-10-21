@@ -33,13 +33,13 @@
       <div class="stats">
         <div><strong>98.8%</strong><span>accuracy on the generators we trained on</span></div>
         <div><strong>0.72&ndash;0.75</strong><span>ROC-AUC of the same detectors on 2024&ndash;26 generators</span></div>
-        <div><strong>0.95</strong><span>after retraining on recent generators</span></div>
+        <div><strong>0.96</strong><span>after retraining on recent generators</span></div>
       </div>
     </section>
 
     <section id="try" class="panel">
       <h2>Try it</h2>
-      <p class="muted">Upload a photo or an AI image (JPEG, PNG, WebP or iPhone HEIC, up to 25 MB). The image is analysed at its original resolution in a grid of 224&nbsp;&times;&nbsp;224 tiles; nothing is stored.</p>
+      <p class="muted">Upload a photo or an AI image (JPEG, PNG, WebP or iPhone HEIC, up to 25 MB). The image is analysed at its original resolution in a grid of 224&nbsp;&times;&nbsp;224 tiles; nothing is stored. Scores are calibrated so that 50% is the decision line.</p>
 
       <div class="try-grid">
         <label id="drop" class="drop" for="file">
@@ -83,7 +83,7 @@
 
     <section id="findings" class="panel">
       <h2>What we found</h2>
-      <p class="muted">Eight experiments on Tiny GenImage (six generators from 2021&ndash;23) and OpenFake (generators from 2024&ndash;26). All numbers below are our own measurements.</p>
+      <p class="muted">Nine experiments on Tiny GenImage (six generators from 2021&ndash;23) and OpenFake (generators from 2024&ndash;26). All numbers below are our own measurements.</p>
 
       <div class="cards">
         <article class="card">
@@ -134,6 +134,12 @@
           <p>Retrained on generators from 2022&ndash;25, the CLIP-based detector reached a ROC-AUC of 0.95 on the unseen 2024&ndash;26 generators and 0.85 after WhatsApp. A detector is only as current as its training data.</p>
           <img src="/static/figures/e7_then_now.png" alt="Detectors trained on old versus recent data" loading="lazy">
         </article>
+        <article class="card wide">
+          <span class="tag">Whole image</span>
+          <h3>More data helps; looking at the whole image helps more after sharing</h3>
+          <p>With 17,780 training images from 74 generators, the CLIP detector reached 0.96 on 2024&ndash;26 generators. Scoring a grid of tiles over the whole image instead of one centre crop raised its ROC-AUC after WhatsApp from 0.85 to 0.93. Training with random blur, resizing and compression did not help in our setting.</p>
+          <img src="/static/figures/e8_robust.png" alt="Effect of more data, augmentation and full-image analysis" loading="lazy">
+        </article>
       </div>
     </section>
 
@@ -144,7 +150,7 @@
         <li><strong>Three generations of detectors.</strong> A fine-tuned ResNet-50 (Wang et al., 2020), frozen CLIP features with a linear classifier (Ojha et al., 2023) and NPR, which looks at differences between neighbouring pixels (Tan et al., 2024), plus their combination.</li>
         <li><strong>Stress tests.</strong> Unseen generators, JPEG, resizing and blur, 2024&ndash;26 generators from OpenFake, and real sharing through WhatsApp.</li>
         <li><strong>Attribution.</strong> A seven-class model that names the source of an image.</li>
-        <li><strong>This website.</strong> The uploaded image is split into a grid of tiles at full resolution; each tile is scored by the ResNet-50 and the CLIP detector trained on recent data, and the tile scores are averaged.</li>
+        <li><strong>This website.</strong> The uploaded image is split into a grid of up to nine tiles at full resolution; each tile is scored by a ResNet-50 and a CLIP-based detector trained on about 18,000 images from 74 recent generators, and the tile scores are averaged. The decision threshold was calibrated on 600 separate full-size images. In our tests the CLIP detector reached a ROC-AUC of 0.96 on images from unseen 2024&ndash;26 generators, and 0.93 on full images after WhatsApp sharing.</li>
       </ol>
     </section>
 

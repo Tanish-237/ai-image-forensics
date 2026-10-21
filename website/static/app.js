@@ -60,7 +60,7 @@ function render(result) {
   document.getElementById("verdict").textContent = result.verdict;
   document.getElementById("verdict").style.color = colourFor(result.probability_ai);
   document.getElementById("meter-fill").style.left = `${result.probability_ai * 100}%`;
-  document.getElementById("prob").textContent = `${percent(result.probability_ai)} AI`;
+  document.getElementById("prob").textContent = `AI score ${percent(result.probability_ai)}`;
 
   const detectors = document.getElementById("detectors");
   detectors.innerHTML = "";
@@ -87,7 +87,7 @@ function render(result) {
   document.getElementById("notes").textContent = result.notes.join(" ");
   const [w, h] = result.original_size;
   document.getElementById("meta").textContent =
-    `${w} × ${h} pixels · ${result.tiles.length} tiles analysed at full resolution · numbers on tiles are the AI probability (%) · ${result.seconds} s`;
+    `${w} × ${h} pixels · ${result.tiles.length} tiles analysed at full resolution · numbers on tiles are calibrated AI scores (%) · ${result.seconds} s`;
   if (currentImage) {
     drawImage(currentImage, result.tiles, result.analysed_size);
   } else {

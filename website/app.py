@@ -71,6 +71,12 @@ class Models:
         return [{"source": s, "probability": p} for s, p in ranked[:3]]
 
 
+def calibrate(p, threshold):
+    """Rescale a score so that the calibrated threshold maps to 0.5 (piecewise linear, monotonic)."""
+    p = np.asarray(p, dtype=np.float64)
+    return np.where(p < threshold, 0.5 * p / threshold, 0.5 + 0.5 * (p - threshold) / (1 - threshold))
+
+
 def tile_positions(width, height, max_tiles=MAX_TILES):
     per_side = int(np.sqrt(max_tiles))
     xs = np.unique(np.linspace(0, width - SIZE, min(per_side, max(1, width // SIZE))).astype(int) // 16 * 16)
@@ -103,17 +109,21 @@ async def analyze(file: UploadFile = File(...)):
     positions = tile_positions(*img.size)
     tiles = np.stack([np.asarray(img.crop((x, y, x + SIZE, y + SIZE))) for x, y in positions])
     m1, m2 = models.score_tiles(tiles)
-    main = {"M1": m1, "M2": m2, "mean": (m1 + m2) / 2}[models.config["main"]]
+    raw = {"M1": m1, "M2": m2, "mean": (m1 + m2) / 2}
+    thresholds = models.config.get("thresholds", {"M1": 0.5, "M2": 0.5, "mean": 0.5})
+    main_name = models.config["main"]
+    main_tiles = raw[main_name]
+    score = float(calibrate(main_tiles.mean(), thresholds[main_name]))
     centre = tiles[len(tiles) // 2]
 
     return {
-        "probability_ai": float(main.mean()),
-        "verdict": "AI-generated" if main.mean() >= 0.5 else "Real photograph",
+        "probability_ai": score,
+        "verdict": "AI-generated" if score >= 0.5 else "Real photograph",
         "detectors": {
-            models.config["names"]["M1"]: float(m1.mean()),
-            models.config["names"]["M2"]: float(m2.mean()),
+            models.config["names"][m]: float(calibrate(raw[m].mean(), thresholds[m])) for m in ["M1", "M2"]
         },
-        "tiles": [{"x": x, "y": y, "size": SIZE, "probability_ai": float(p)} for (x, y), p in zip(positions, main)],
+        "tiles": [{"x": x, "y": y, "size": SIZE, "probability_ai": float(calibrate(p, thresholds[main_name]))}
+                  for (x, y), p in zip(positions, main_tiles)],
         "analysed_size": list(img.size),
         "original_size": [width, height],
         "closest_sources": models.attribute(centre),
