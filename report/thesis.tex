@@ -1156,6 +1156,103 @@ Table~\ref{tab:e7} and Figure~\ref{fig:e7} show four findings.
         hardest generators (46--62\% detected).
 \end{enumerate}
 
+\section{More Data, Augmentation and Full-Image Analysis (E8)}
+\label{sec:e8}
+E8 repeats E7 with five complete OpenFake training files (17{,}780
+balanced training images from 74 generators; 3{,}446 validation
+images) and separates two possible improvements:
+\begin{itemize}
+  \item \textbf{Full data:} the larger training set, with each training
+        image stored as a $256\times256$ centre crop and a random
+        $224\times224$ crop taken at every step.
+  \item \textbf{Full data + augmentation:} the same, but each training
+        crop is additionally blurred ($\sigma$ from 0.1 to 2), resized to
+        50--100\% and back, and JPEG-compressed (quality 50--95), each
+        with probability 0.5, following Wang \emph{et al.}~\cite{wang2020cnn}.
+        For M2, the classifier is trained on the CLIP features of the
+        clean crops and of two augmented copies of each.
+\end{itemize}
+E8 also tests \textbf{full-image analysis}: instead of one centre crop,
+the image is covered by an evenly spaced grid of up to $3\times3$ tiles
+of $224\times224$ pixels at its original resolution, and the tile scores
+are averaged. Nothing is resized, so pixel traces are preserved.
+
+\begin{table}[h]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llccc}
+\toprule
+\textbf{Test set} & & \textbf{E7} & \textbf{Full data} & \textbf{+ Augmentation}\\
+\midrule
+OpenFake (centre crop) & M1 & 0.877 & \textbf{0.879} & 0.832\\
+ & M2 & 0.945 & \textbf{0.957} & 0.941\\
+GenImage (centre crop) & M1 & 0.770 & \textbf{0.917} & 0.777\\
+ & M2 & \textbf{0.900} & 0.881 & 0.849\\
+\bottomrule
+\end{tabular}
+\caption{E8: ROC-AUC of detectors trained on OpenFake data.}
+\label{tab:e8}
+\end{table}
+
+\begin{table}[h]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{ll|ccc|ccc}
+\toprule
+ & & \multicolumn{3}{c|}{\textbf{Centre crop}} & \multicolumn{3}{c}{\textbf{Full image}}\\
+ & & AUC & Real & AI & AUC & Real & AI\\
+\midrule
+Before WhatsApp & M1 & 0.840 & 88 & 60 & 0.871 & 92 & 54\\
+ & M2 & 0.927 & 84 & 84 & \textbf{0.953} & 94 & 62\\
+After WhatsApp & M1 & 0.707 & 86 & 50 & 0.753 & 98 & 32\\
+ & M2 & 0.846 & 80 & 72 & \textbf{0.933} & 96 & 32\\
+\bottomrule
+\end{tabular}
+\caption{E8 (full data, no augmentation): the 100 WhatsApp images analysed with one centre crop or with the full-image tile grid. Real: real images called real (\%); AI: generated images detected (\%), both at the threshold 0.5.}
+\label{tab:e8-whatsapp}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/e8_robust.png}
+\caption{E8: ROC-AUC of the E7 detectors and of the two E8 variants.}
+\label{fig:e8}
+\end{figure}
+
+Tables~\ref{tab:e8} and~\ref{tab:e8-whatsapp} and Figure~\ref{fig:e8}
+show three findings.
+
+\begin{enumerate}
+  \item \textbf{More training data helped, most of all for M1 on old
+        generators.} With 4.5 times more images, M1's ROC-AUC on
+        GenImage rose from 0.770 to 0.917, and its real-image accuracy
+        there from 50.4\% to 89.2\%. M2 improved slightly on OpenFake,
+        from 0.945 to 0.957, the best result of the project on
+        2024--2026 generators.
+  \item \textbf{Augmentation did not help in our setting.} The augmented
+        variants were worse on both test sets and after WhatsApp sharing
+        (for example M2 on OpenFake: 0.941 against 0.957). They did
+        improve the hardest generators for M2: GPT Image~2 rose from
+        58.6\% to 70.3\% detected, Seedream~5.0 from 66.7\% to 75.9\% and
+        Sora~2 from 68.1\% to 78.5\%. One possible reason is that our
+        augmentation was stronger than the processing applied by
+        WhatsApp (quality about 80, at most a reduction to 1600 pixels);
+        we did not test other strengths.
+  \item \textbf{Full-image analysis improves ranking but needs its own
+        threshold.} Covering the image with tiles raised ROC-AUC in all
+        eight comparisons, by 0.03 to 0.09; for M2 after WhatsApp from
+        0.846 to 0.933. At the fixed threshold of 0.5, however, the
+        averaged scores were lower on the whole: more real images were
+        called real (80\% to 96\%) but fewer generated images were
+        detected (72\% to 32\%). Tiles from plain regions of a generated
+        image often look real, and averaging pulls the score down. As in
+        E2, E3 and E6, the ranking is better than the threshold
+        suggests, so a full-image detector needs a threshold chosen for
+        full-image scores.
+\end{enumerate}
+
 \section{Visualising Generator Fingerprints}
 A single image does not reveal a generator's traces because the scene
 dominates. Following the logic of camera fingerprinting, we removed the
