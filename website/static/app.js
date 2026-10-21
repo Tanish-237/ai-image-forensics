@@ -1,3 +1,6 @@
+// The page talks to the API on the same server, or to the address given as ?api=... (used by the hosted copy).
+const API_BASE = (new URLSearchParams(location.search).get("api") || "").replace(/\/$/, "");
+
 const fileInput = document.getElementById("file");
 const drop = document.getElementById("drop");
 const canvas = document.getElementById("preview");
@@ -100,6 +103,7 @@ function render(result) {
 }
 
 async function analyse(file) {
+  if (fileInput.disabled) return;
   show("busy");
   document.getElementById("drop-empty").hidden = true;
   document.getElementById("preview-wrap").hidden = false;
@@ -115,7 +119,7 @@ async function analyse(file) {
   const form = new FormData();
   form.append("file", file);
   try {
-    const response = await fetch("/api/analyze", { method: "POST", body: form });
+    const response = await fetch(`${API_BASE}/api/analyze`, { method: "POST", body: form });
     const data = await response.json();
     if (!response.ok) throw new Error(data.detail || "The image could not be analysed.");
     render(data);
@@ -133,3 +137,19 @@ for (const type of ["dragleave", "drop"]) {
   drop.addEventListener(type, (e) => { e.preventDefault(); drop.classList.remove("over"); });
 }
 drop.addEventListener("drop", (e) => e.dataTransfer.files[0] && analyse(e.dataTransfer.files[0]));
+
+async function checkServer() {
+  try {
+    const response = await fetch(`${API_BASE}/api/info`);
+    if (!response.ok) throw new Error();
+    await response.json();
+  } catch {
+    fileInput.disabled = true;
+    drop.classList.add("offline");
+    document.getElementById("drop-empty").innerHTML =
+      "<strong>The live detector is offline</strong><span class='muted'>It runs on our own computer and is switched on during demonstrations. The results of our experiments are below.</span>";
+    views.empty.textContent = "Analysis is available when the detector is running.";
+  }
+}
+
+checkServer();

@@ -67,3 +67,10 @@ tectonic thesis.tex     # produces thesis.pdf
 ## Dataset and licences
 
 Tiny GenImage is a subset of GenImage (Zhu et al., NeurIPS 2023) and is distributed under CC-BY-NC-SA-4.0. We use it for academic, non-commercial work only.
+
+## Website
+
+- **Hosted page:** https://tanish-237-ai-image-forensics.static.hf.space (findings, method, team; live analysis when our detector server is running)
+- **Run the full site with live analysis on a laptop:** `website/run.sh` (first run installs everything; afterwards it also works without internet). `website/run.sh --public` additionally prints a temporary public link (needs `cloudflared`).
+- Models: https://huggingface.co/tanish-237/ai-image-forensics-models (exported by `notebooks/18_export_website_models.ipynb`)
+- Update the hosted page after editing `website/static/`: `python website/publish_static.py`

@@ -12,6 +12,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from huggingface_hub import snapshot_download
@@ -84,8 +85,21 @@ def tile_positions(width, height, max_tiles=MAX_TILES):
     return [(int(x), int(y)) for y in ys for x in xs]
 
 
-models = Models(MODEL_DIR or snapshot_download(MODEL_REPO, token=os.environ.get("HF_TOKEN")))
+def model_folder():
+    if MODEL_DIR:
+        return MODEL_DIR
+    try:
+        return snapshot_download(MODEL_REPO, token=os.environ.get("HF_TOKEN"))
+    except Exception:
+        # no internet: use the copy downloaded on an earlier run
+        os.environ["HF_HUB_OFFLINE"] = "1"
+        return snapshot_download(MODEL_REPO, local_files_only=True)
+
+
+models = Models(model_folder())
 app = FastAPI(title="AI Image Forensics")
+# the static copy of the page (hosted elsewhere) calls this API from another address
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["GET", "POST"], allow_headers=["*"])
 
 
 @app.post("/api/analyze")

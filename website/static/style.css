@@ -112,6 +112,7 @@ main { max-width: 1120px; margin: 0 auto; padding: 0 16px 64px; }
   transition: border-color 0.15s;
 }
 .drop.over, .drop:hover { border-color: var(--accent); }
+.drop.offline { cursor: default; border-color: var(--line); }
 #drop-empty { display: flex; flex-direction: column; gap: 4px; align-items: center; }
 .drop-icon { font-size: 34px; color: var(--accent); }
 #preview-wrap { width: 100%; }
