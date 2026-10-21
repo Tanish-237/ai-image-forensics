@@ -41,6 +41,7 @@ This project is a forensic study of AI-generated images. Given only the pixels, 
 
 ```
 notebooks/   Colab notebooks, one per step (run in order)
+website/     Project website: FastAPI backend and web page (deployed on Hugging Face Spaces)
 src/         Reusable Python code imported by the notebooks
 report/      Final report (MNNIT LaTeX template): thesis.tex, references.bib
 docs/        Literature notes and dataset documentation

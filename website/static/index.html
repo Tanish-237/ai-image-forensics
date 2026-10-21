@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Image Forensics</title>
+  <meta name="description" content="Detecting and attributing AI-generated images: a forensic fingerprinting study (MNNIT Allahabad, B.Tech minor project 2026).">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#top">AI Image Forensics</a>
+    <nav>
+      <a href="#try">Try it</a>
+      <a href="#findings">Findings</a>
+      <a href="#method">Method</a>
+      <a href="#team">Team</a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <p class="eyebrow">Digital Media Fingerprinting and Source Identification</p>
+      <h1>Is this image <span class="accent">AI-generated</span>?</h1>
+      <p class="lead">Every camera leaves a fingerprint in the pixels, and so does every image generator. We built and stress-tested detectors that look for these traces, from 2021 generators to ChatGPT's GPT Image 2.</p>
+      <div class="hero-actions">
+        <a class="button primary" href="#try">Analyse an image</a>
+        <a class="button" href="#findings">See what we found</a>
+      </div>
+      <div class="stats">
+        <div><strong>98.8%</strong><span>accuracy on the generators we trained on</span></div>
+        <div><strong>0.72&ndash;0.75</strong><span>ROC-AUC of the same detectors on 2024&ndash;26 generators</span></div>
+        <div><strong>0.95</strong><span>after retraining on recent generators</span></div>
+      </div>
+    </section>
+
+    <section id="try" class="panel">
+      <h2>Try it</h2>
+      <p class="muted">Upload a photo or an AI image (JPEG, PNG, WebP or iPhone HEIC, up to 25 MB). The image is analysed at its original resolution in a grid of 224&nbsp;&times;&nbsp;224 tiles; nothing is stored.</p>
+
+      <div class="try-grid">
+        <label id="drop" class="drop" for="file">
+          <input id="file" type="file" accept="image/*,.heic,.heif" hidden>
+          <div id="drop-empty">
+            <div class="drop-icon">&#8679;</div>
+            <strong>Drop an image here</strong>
+            <span class="muted">or click to choose a file</span>
+          </div>
+          <div id="preview-wrap" hidden>
+            <canvas id="preview"></canvas>
+          </div>
+        </label>
+
+        <div id="result" class="result">
+          <div id="result-empty" class="muted">The verdict, the score of each detector and a map of which regions look generated will appear here.</div>
+          <div id="result-busy" hidden>
+            <div class="spinner"></div>
+            <p>Analysing&hellip; this runs on a CPU and can take up to 30 seconds.</p>
+          </div>
+          <div id="result-error" class="error" hidden></div>
+          <div id="result-body" hidden>
+            <p class="label">Verdict</p>
+            <h3 id="verdict"></h3>
+            <div class="meter"><div id="meter-fill"></div><div class="meter-mid"></div></div>
+            <div class="meter-labels"><span>Real</span><span id="prob"></span><span>AI-generated</span></div>
+
+            <p class="label">Detectors</p>
+            <ul id="detectors" class="bars"></ul>
+
+            <p class="label">Closest 2021&ndash;23 generator fingerprint <span class="hint" title="Our attribution model knows only the six GenImage generators and real photographs. For a newer generator it names the most similar older one.">?</span></p>
+            <ul id="sources" class="sources"></ul>
+
+            <p id="notes" class="note"></p>
+            <p id="meta" class="muted small"></p>
+          </div>
+        </div>
+      </div>
+      <p class="disclaimer">Research prototype. Our experiments show that detectors are less reliable on the newest generators and on images that were resized, compressed or shared through messaging apps. Do not use a single result as proof.</p>
+    </section>
+
+    <section id="findings" class="panel">
+      <h2>What we found</h2>
+      <p class="muted">Eight experiments on Tiny GenImage (six generators from 2021&ndash;23) and OpenFake (generators from 2024&ndash;26). All numbers below are our own measurements.</p>
+
+      <div class="cards">
+        <article class="card">
+          <span class="tag">Shortcuts</span>
+          <h3>A detector can score 98.8% without really working</h3>
+          <p>Real photos in public datasets are JPEGs while AI images are often PNGs. A model trained on such data learned that JPEG traces mean &ldquo;real&rdquo;: once the AI images were compressed the same way, its accuracy fell from 98.8% to 78.9%. We removed these shortcuts before every other experiment.</p>
+          <img src="/static/figures/e5_shortcut.png" alt="Accuracy of a detector trained on uncleaned versus cleaned data" loading="lazy">
+        </article>
+
+        <article class="card">
+          <span class="tag">Fingerprints</span>
+          <h3>Each generator leaves a visible pattern</h3>
+          <p>Averaging the frequency spectrum of the noise left after removing image content shows a distinct pattern for every generator. Our attribution model names the right one of seven sources 86.1% of the time (chance: 14.3%).</p>
+          <img src="/static/figures/05_spectra.png" alt="Average noise spectra of real images and six generators" loading="lazy">
+        </article>
+
+        <article class="card">
+          <span class="tag">New generators</span>
+          <h3>Unseen generators are the real challenge</h3>
+          <p>Trained on one generator, every detector caught about 97% of its images but only 55&ndash;80% of five others. The CLIP-based detector generalised best.</p>
+          <img src="/static/figures/e2_detection.png" alt="Detection rate on generators unseen during training" loading="lazy">
+        </article>
+
+        <article class="card">
+          <span class="tag">Processing</span>
+          <h3>Resizing makes real photos look fake</h3>
+          <p>After shrinking images to half size, the detectors still flagged AI images, but called only 1&ndash;6% of real photographs real. Removing fine detail and camera noise makes a photo resemble a generated image.</p>
+          <img src="/static/figures/e3_errors.png" alt="Effect of JPEG, resizing and blur on real and generated images" loading="lazy">
+        </article>
+
+        <article class="card wide">
+          <span class="tag">Then vs now</span>
+          <h3>2023 detectors miss many 2026 images</h3>
+          <p>On images from 2024&ndash;26 generators, ROC-AUC fell from 0.99 to 0.72&ndash;0.75. GPT Image 2, released in April 2026, was detected only 14&ndash;34% of the time.</p>
+          <img src="/static/figures/e6_then_now.png" alt="The same detectors on 2021-23 and 2024-26 generators" loading="lazy">
+        </article>
+
+        <article class="card">
+          <span class="tag">WhatsApp</span>
+          <h3>One share is enough to confuse them</h3>
+          <p>We sent 100 images through WhatsApp ourselves. It re-saved every image as a JPEG of quality about 80 and shrank large ones; afterwards no detector did much better than chance.</p>
+          <img src="/static/figures/e6_whatsapp.png" alt="Detector results before and after sharing through WhatsApp" loading="lazy">
+        </article>
+
+        <article class="card">
+          <span class="tag">Keeping up</span>
+          <h3>Recent training data closes most of the gap</h3>
+          <p>Retrained on generators from 2022&ndash;25, the CLIP-based detector reached a ROC-AUC of 0.95 on the unseen 2024&ndash;26 generators and 0.85 after WhatsApp. A detector is only as current as its training data.</p>
+          <img src="/static/figures/e7_then_now.png" alt="Detectors trained on old versus recent data" loading="lazy">
+        </article>
+      </div>
+    </section>
+
+    <section id="method" class="panel">
+      <h2>How it works</h2>
+      <ol class="steps">
+        <li><strong>Clean the data.</strong> Same file format, same JPEG quality range and the same 224&nbsp;&times;&nbsp;224 crop position for real and AI images, so that only pixel content can separate them.</li>
+        <li><strong>Three generations of detectors.</strong> A fine-tuned ResNet-50 (Wang et al., 2020), frozen CLIP features with a linear classifier (Ojha et al., 2023) and NPR, which looks at differences between neighbouring pixels (Tan et al., 2024), plus their combination.</li>
+        <li><strong>Stress tests.</strong> Unseen generators, JPEG, resizing and blur, 2024&ndash;26 generators from OpenFake, and real sharing through WhatsApp.</li>
+        <li><strong>Attribution.</strong> A seven-class model that names the source of an image.</li>
+        <li><strong>This website.</strong> The uploaded image is split into a grid of tiles at full resolution; each tile is scored by the ResNet-50 and the CLIP detector trained on recent data, and the tile scores are averaged.</li>
+      </ol>
+    </section>
+
+    <section id="team" class="panel">
+      <h2>Team</h2>
+      <p>B.Tech VII Semester Minor Project, Department of Computer Science and Engineering, Motilal Nehru National Institute of Technology Allahabad, 2026.</p>
+      <ul class="team">
+        <li>Tanish Mittal</li>
+        <li>Vanshika Gautam</li>
+        <li>Shashank Kanaujiya</li>
+        <li>Utkarsh Raj Singh</li>
+        <li>Ashish Meena</li>
+      </ul>
+      <p class="muted">Mentor: Dr. Anuja Dixit</p>
+      <p class="muted small">Datasets: Tiny GenImage (CC BY-NC-SA 4.0) and OpenFake (CC BY-NC 4.0). Non-commercial academic use.</p>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
