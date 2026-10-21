@@ -1074,8 +1074,87 @@ percentage has an uncertainty of several points, so per-generator
 results from this test are not interpreted.
 
 \section{Training on Current Generators (E7)}
-% TODO: train on an OpenFake training subset; test on GenImage and on OpenFake's held-out generators.
-\textit{To be completed.}
+E6 showed that detectors trained on 2021--2023 generators miss many
+images from 2024--2026 generators. E7 asks whether more recent training
+data closes this gap. M1 and M2 were trained again, with unchanged
+settings, on data from the OpenFake \emph{training} split: real
+photographs from LAION and Pexels and generated images from 72
+generators released between 2022 and 2025, including SD~3.5, Flux.1,
+Midjourney~6, DALL-E~3 and GPT Image~1. Five training files were chosen
+by evenly spaced position in the file list; in this run that selected
+one full file and four small ones, giving 3{,}972 balanced training
+images, about a fifth of our GenImage training set. One file of the
+OpenFake validation split (3{,}552 balanced images) was used for model
+selection (M1: epoch 2; M2: $C = 10$). The bias control of
+Section~\ref{sec:bias} was applied: images that were not JPEG files were
+compressed once at a quality drawn from the real training images, after
+which the median JPEG quality was 95 for real and 91 for generated
+training images.
+
+None of the E6 test generators occurs in the OpenFake training split, and
+its real test photographs come from different sources (DOCCI and
+ImageNet), so E7 still measures generalisation to unseen generators. The
+new detectors were evaluated on exactly the images of E6, on the 100
+WhatsApp pairs and on our GenImage test set.
+
+\begin{table}[h]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llccc|ccc}
+\toprule
+ & & \multicolumn{3}{c|}{\textbf{Trained on GenImage}} & \multicolumn{3}{c}{\textbf{Trained on OpenFake}}\\
+\textbf{Test set} & & Real & AI & AUC & Real & AI & AUC\\
+\midrule
+GenImage & M1 & 97.2 & 95.9 & \textbf{0.994} & 50.4 & 85.0 & 0.770\\
+ & M2 & 97.8 & 97.2 & \textbf{0.997} & 81.7 & 81.8 & 0.900\\
+OpenFake & M1 & 79.5 & 54.6 & 0.751 & 64.5 & 85.3 & \textbf{0.877}\\
+ & M2 & 60.7 & 68.7 & 0.720 & 88.8 & 84.8 & \textbf{0.945}\\
+WhatsApp (after) & M1 & 76 & 34 & 0.530 & 68 & 62 & \textbf{0.669}\\
+ & M2 & 54 & 50 & 0.580 & 86 & 68 & \textbf{0.853}\\
+\bottomrule
+\end{tabular}
+\caption{E7: real images called real (\%), generated images detected (\%) and ROC-AUC for detectors trained on GenImage or on OpenFake. The WhatsApp rows use 50 images per class.}
+\label{tab:e7}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/e7_then_now.png}
+\caption{E7: ROC-AUC of detectors trained on GenImage (grey) or on OpenFake (blue).}
+\label{fig:e7}
+\end{figure}
+
+Table~\ref{tab:e7} and Figure~\ref{fig:e7} show four findings.
+
+\begin{enumerate}
+  \item \textbf{Recent training data largely closes the gap.} On the
+        OpenFake test set, ROC-AUC rose from 0.751 to 0.877 for M1 and
+        from 0.720 to 0.945 for M2, although the test generators were
+        still unseen and the training set was five times smaller than
+        our GenImage training set. The hardest generators of E6 improved
+        most: for M2, GPT Image~1.5 rose from 49.0\% to 80.5\% detected,
+        GPT Image~2 from 34.2\% to 62.2\%, Recraft v3 from 63.5\% to
+        89.5\% and Midjourney~7 from 72.0\% to 86.0\%. M2 also called
+        90.0\% of DOCCI photographs real, against 23.7\% before.
+  \item \textbf{CLIP benefits most.} The frozen CLIP features with a
+        new linear classifier became the best detector in E7, consistent
+        with E2: a general representation adapts best when the training
+        data is diverse.
+  \item \textbf{The new detectors are less accurate on old generators.}
+        On GenImage, ROC-AUC fell to 0.770 (M1) and 0.900 (M2). The new
+        M1 also called only 50.4\% of GenImage real images and 47.0\% of
+        ImageNet test photographs real: real photographs that differ from
+        its LAION and Pexels training photographs were often labelled
+        generated. A detector reflects the real and generated images it
+        was trained on, in both directions.
+  \item \textbf{Robustness to sharing improved but was not solved.}
+        After WhatsApp, the new M2 kept a ROC-AUC of 0.853 (against
+        0.580 for the GenImage-trained M2), possibly because web images
+        from LAION already carry resizing and compression. The new M1
+        reached only 0.669. GPT Image~2 and Seedream~5.0 remained the
+        hardest generators (46--62\% detected).
+\end{enumerate}
 
 \section{Visualising Generator Fingerprints}
 A single image does not reveal a generator's traces because the scene
