@@ -40,7 +40,7 @@
 
     <section id="try" class="panel">
       <h2>Try it</h2>
-      <p class="muted">Upload a photo or an AI image (JPEG, PNG, WebP or iPhone HEIC, up to 25 MB). The image is analysed at its original resolution in a grid of 224&nbsp;&times;&nbsp;224 tiles; nothing is stored. Scores are calibrated so that 50% is the decision line.</p>
+      <p class="muted">Upload a photo or an AI image (JPEG, PNG, WebP or iPhone HEIC, up to 25 MB); nothing is stored. The file is checked in two ways: its <strong>provenance</strong>, the signed Content Credentials and labels that services such as ChatGPT embed, and its <strong>pixels</strong>, scored in a grid of 224&nbsp;&times;&nbsp;224 tiles at original resolution.</p>
 
       <div class="try-grid">
         <label id="drop" class="drop" for="file">
@@ -56,7 +56,7 @@
         </label>
 
         <div id="result" class="result">
-          <div id="result-empty" class="muted">The verdict, the score of each detector and a map of which regions look generated will appear here.</div>
+          <div id="result-empty" class="muted">The verdict, the provenance of the file, the pixel detector's score and a map of which regions look generated will appear here.</div>
           <div id="result-busy" hidden>
             <div class="spinner"></div>
             <p>Analysing&hellip; this runs on a CPU and can take up to 30 seconds.</p>
@@ -65,21 +65,22 @@
           <div id="result-body" hidden>
             <p class="label">Verdict</p>
             <h3 id="verdict"></h3>
+            <p id="basis" class="basis"></p>
+
+            <p class="label">Provenance</p>
+            <ul id="provenance" class="evidence"></ul>
+
+            <p class="label">Pixel detector</p>
             <div class="meter"><div id="meter-fill"></div><div class="meter-mid"></div></div>
             <div class="meter-labels"><span>Real</span><span id="prob"></span><span>AI-generated</span></div>
-
-            <p class="label">Detectors</p>
-            <ul id="detectors" class="bars"></ul>
-
-            <p class="label">Closest 2021&ndash;23 generator fingerprint <span class="hint" title="Our attribution model knows only the six GenImage generators and real photographs. For a newer generator it names the most similar older one.">?</span></p>
-            <ul id="sources" class="sources"></ul>
+            <p id="pixel-name" class="muted small"></p>
 
             <p id="notes" class="note"></p>
             <p id="meta" class="muted small"></p>
           </div>
         </div>
       </div>
-      <p class="disclaimer">Research prototype. Our experiments show that detectors are less reliable on the newest generators and on images that were resized, compressed or shared through messaging apps. Do not use a single result as proof.</p>
+      <p class="disclaimer">Research prototype. Missing Content Credentials do not mean that an image is real: messaging apps, screenshots and most editors remove them. Our experiments show that pixel detectors are less reliable on unfamiliar generators and on images that were resized, compressed or shared. Do not use a single result as proof.</p>
     </section>
 
     <section id="findings" class="panel">
@@ -151,7 +152,7 @@
         <li><strong>Three generations of detectors.</strong> A fine-tuned ResNet-50 (Wang et al., 2020), frozen CLIP features with a linear classifier (Ojha et al., 2023) and NPR, which looks at differences between neighbouring pixels (Tan et al., 2024), plus their combination.</li>
         <li><strong>Stress tests.</strong> Unseen generators, JPEG, resizing and blur, 2024&ndash;26 generators from OpenFake, and real sharing through WhatsApp.</li>
         <li><strong>Attribution.</strong> A seven-class model that names the source of an image.</li>
-        <li><strong>This website.</strong> The uploaded image is split into a grid of up to nine tiles at full resolution; each tile is scored by a ResNet-50 and a CLIP-based detector trained on about 18,000 images from 74 recent generators, and the tile scores are averaged. The decision threshold was calibrated on 600 separate full-size images. In our tests the CLIP detector reached a ROC-AUC of 0.96 on images from unseen 2024&ndash;26 generators, and 0.93 on full images after WhatsApp sharing.</li>
+        <li><strong>This website.</strong> First the file's provenance is read. ChatGPT and a growing number of other generators and cameras attach Content Credentials (C2PA): a record of how the image was made, signed with a certificate. If the signature is valid and the image has not been changed since signing, the record decides the verdict. Unsigned AI labels in the metadata are also reported. If there is no such evidence, which is the case for any image that was shared through a messaging app, the pixels decide: the image is split into a grid of up to nine tiles at full resolution, each tile is scored by a CLIP-based detector, and the scores are averaged. The decision threshold was calibrated on 600 separate full-size images.</li>
       </ol>
     </section>
 

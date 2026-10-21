@@ -8,12 +8,15 @@ VENV="../.venv"
 PORT=7860
 SITE="https://tanish-237-ai-image-forensics.static.hf.space"
 
-if [ ! -x "$VENV/bin/uvicorn" ]; then
+if [ ! -x "$VENV/bin/python" ]; then
   echo "First run: creating the Python environment (a few minutes)..."
   PY=$(command -v python3.12 || command -v python3)
   "$PY" -m venv "$VENV"
   "$VENV/bin/pip" install --quiet --upgrade pip
-  "$VENV/bin/pip" install --quiet torch torchvision fastapi uvicorn python-multipart pillow pillow-heif transformers huggingface_hub numpy
+fi
+if ! "$VENV/bin/python" -c "import torch, fastapi, uvicorn, multipart, pillow_heif, transformers, c2pa" 2> /dev/null; then
+  echo "Installing the required packages (a few minutes)..."
+  "$VENV/bin/pip" install --quiet torch fastapi uvicorn python-multipart pillow pillow-heif transformers huggingface_hub numpy c2pa-python
 fi
 
 "$VENV/bin/uvicorn" app:app --host 127.0.0.1 --port $PORT &
