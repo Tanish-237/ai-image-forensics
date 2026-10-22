@@ -43,7 +43,7 @@ The final detector (E10) is M2 trained on current generators and real photograph
 | E6 | 2021-23 detectors on 2024-26 generators (OpenFake), and 100 images sent through WhatsApp | ROC-AUC falls to **0.72-0.75**; after WhatsApp close to chance |
 | E7 | Retrain on OpenFake's training split (72 generators, 2022-25) | ROC-AUC on unseen current generators: M2 0.720 to **0.945** |
 | E8 | More data, augmentation, full-image tile analysis | M2 reaches 0.957; tiles raise ROC-AUC after WhatsApp from 0.846 to **0.933**; augmentation did not help |
-| E9 | Deployment detector including the newest generators | ROC-AUC 0.999 on OpenFake, but only **45%** of real phone photos called real |
+| E9 | Deployment detector including the newest generators | ROC-AUC 0.999 on OpenFake, but only **45%** of Unsplash phone photos and 28% of camera photos called real |
 | E10 | E9 plus phone photos from 57 models, ChatGPT and Gemini images | **98%** of phone photos called real; 97% ChatGPT and 99% Gemini images detected |
 | E11 | Attribution to nine current generator families (chance 11%) | 67% on benchmark images; did not transfer to our own app images (5 of 62) |
 | E12 | Map of the CLIP feature space (t-SNE, 10-nearest-neighbour agreement) | Real and AI images separate clearly (96% / 94% agreement, chance 35% / 65%) |
