@@ -5,7 +5,7 @@
 set -e
 cd "$(dirname "$0")"
 VENV="../.venv"
-PORT=7860
+PORT=${PORT:-7860}
 SITE="https://tanish-237-ai-image-forensics.static.hf.space"
 
 if [ ! -x "$VENV/bin/python" ]; then
@@ -21,7 +21,7 @@ fi
 
 "$VENV/bin/uvicorn" app:app --host 127.0.0.1 --port $PORT &
 SERVER=$!
-trap 'kill $SERVER 2>/dev/null; kill $TUNNEL 2>/dev/null' EXIT
+trap 'kill $SERVER $WATCHER 2>/dev/null; pkill -f "cloudflared tunnel --url http://localhost:$PORT" 2>/dev/null' EXIT
 
 echo "Loading models..."
 until curl -s "http://localhost:$PORT/api/info" > /dev/null; do
@@ -34,14 +34,31 @@ echo "Website running at http://localhost:$PORT"
 
 if [ "$1" == "--public" ]; then
   command -v cloudflared > /dev/null || { echo "Install cloudflared first: brew install cloudflared"; exit 1; }
-  LOG=$(mktemp)
-  cloudflared tunnel --url "http://localhost:$PORT" > "$LOG" 2>&1 &
-  TUNNEL=$!
-  until URL=$(grep -o 'https://[a-z0-9-]*\.trycloudflare\.com' "$LOG" | head -1) && [ -n "$URL" ]; do sleep 1; done
-  echo "Opening the public link (this can take a minute)..."
-  until curl -s "$URL/api/info" > /dev/null 2>&1 && curl -s "$URL/api/info" | grep -q max_tiles; do sleep 3; done
-  echo "Public link (while this window stays open): $URL"
-  echo "Hosted page with live analysis:             $SITE/?api=$URL"
+  open_tunnel() {
+    LOG=$(mktemp)
+    cloudflared tunnel --url "http://localhost:$PORT" > "$LOG" 2>&1 &
+    TUNNEL=$!
+    until URL=$(grep -o 'https://[a-z0-9-]*\.trycloudflare\.com' "$LOG" | head -1) && [ -n "$URL" ]; do sleep 1; done
+    echo "Opening the public link (this can take a minute)..."
+    until curl -s -m 10 "$URL/api/info" | grep -q max_tiles; do sleep 3; done
+    echo
+    echo "Public link (while this window stays open): $URL"
+    echo "Hosted page with live analysis:             $SITE/?api=$URL"
+    echo
+  }
+  open_tunnel
+  # Quick tunnels end when the computer sleeps or changes network; reopen and print the new link.
+  (
+    while kill -0 $SERVER 2>/dev/null; do
+      sleep 30
+      if ! curl -s -m 10 "$URL/api/info" | grep -q max_tiles && ! curl -s -m 10 "$URL/api/info" | grep -q max_tiles; then
+        echo "The public link stopped working; opening a new one..."
+        kill $TUNNEL 2>/dev/null || true
+        open_tunnel
+      fi
+    done
+  ) &
+  WATCHER=$!
 fi
 
 echo "Press Ctrl+C to stop."
