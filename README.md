@@ -120,3 +120,7 @@ tectonic thesis.tex
 | C2PA trust list | CC BY 4.0 | website |
 
 No dataset images are redistributed here; the sample images on the website were generated or photographed by us. The project is for academic, non-commercial use.
+
+## Licence
+
+The code is released under the [MIT licence](LICENSE). The datasets keep their own licences listed above, which restrict use to non-commercial purposes.
