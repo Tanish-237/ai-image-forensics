@@ -403,8 +403,21 @@ An upload is analysed in two steps:
         $5\times5$ selectable, Section~\ref{sec:tiles}), each tile
         is scored by the CLIP-based detector of E10, and the scores are
         averaged. The score is rescaled so that the calibrated threshold
-        maps to 50\%, and the tile scores are drawn on the image.
+        maps to 50\%, and the tile scores are drawn on the image. A score
+        between 40\% and 60\% is reported as uncertain, with the side it
+        leans to (Section~\ref{sec:unsure}).
 \end{enumerate}
+Three further functions support demonstrations. A \emph{WhatsApp
+simulation} re-saves the uploaded file as in E9 and E10 (long side at
+most 1600 pixels, JPEG quality 80, metadata removed), analyses the copy
+and shows both results side by side, so that the loss of the Content
+Credentials and the change of the pixel score can be seen directly. For
+one of our ChatGPT images, the simulated copy
+(204\,KB, pixel score 70.8\%) closely matched the copy we had actually
+sent through WhatsApp (199\,KB, 70.8\%). Six sample images from our own
+test can be analysed with one click, and while a public link is open the
+page shows it as a QR code, so that a visitor can analyse a photo from
+their own phone.
 The backend is written in Python with FastAPI and runs on our own
 computer during demonstrations, at about 5--9 seconds per image on a
 laptop CPU (of which the detector itself takes 3.1 seconds for 16 tiles); a static copy of the page with all experiment results is
@@ -1645,6 +1658,40 @@ detected many generated files but also called 8.5\% of the real files
 AI-generated. The website therefore uses 16 tiles by default and lets the
 user choose 9 (faster) or 25.
 
+\section{Uncertain Results}
+\label{sec:unsure}
+Most of the remaining errors were close calls: of the nine wrong
+decisions with 16 tiles in Section~\ref{sec:tiles}, six had a calibrated
+score between 40\% and 60\%. The website therefore reports such scores
+as ``not sure'' and names the side the score leans to, instead of giving
+a confident verdict. The band of ten points on either side of the
+decision line was fixed as a round value and not tuned; it was evaluated
+on the same 206 files as the number of tiles, so the result is
+optimistic.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lccc}
+\toprule
+ & \textbf{Correct} & \textbf{Not sure} & \textbf{Wrong}\\
+\midrule
+Generated (64), without band & 58 & -- & 6\\
+Generated (64), with band & 48 & 14 & 2\\
+Real (142), without band & 139 & -- & 3\\
+Real (142), with band & 137 & 4 & 1\\
+\bottomrule
+\end{tabular}
+\caption{Decisions of the final detector (16 tiles) with and without the uncertain band of 40--60\%.}
+\label{tab:unsure}
+\end{table}
+
+With the band, 18 of the 206 files (8.7\%) were reported as uncertain,
+and the confident decisions were correct for 185 of 188 files (98.4\%)
+instead of 197 of 206 (95.6\%) (Table~\ref{tab:unsure}). The cost is that
+12 files that would have been decided correctly are also reported as
+uncertain, although the side they lean to is correct for all 12.
+
 \section{Attribution of Current Generators (E11)}
 \label{sec:e11}
 E4 attributed images to six generators from 2021 to 2023. E11 trains an
@@ -1706,6 +1753,76 @@ themselves, and the website does not show it. For files that keep their
 Content Credentials, the signed manifest names the application reliably
 (Section~\ref{sec:fresh}).
 
+\section{Fingerprint Map (E12)}
+\label{sec:e12}
+The detectors of E8 to E11 work on CLIP features, 768 numbers per tile.
+E12 draws these features as a map. Each test image of E10 and E11 is
+represented by the average of its tile features; t-SNE
+\cite{vandermaaten2008tsne} places the images in two dimensions so that
+images with similar features lie close together. We used up to 300
+images per generator family and 600 real photographs (1{,}803 images),
+as distributed and after the simulated WhatsApp share. Distances between
+distant groups and the size of a group carry little meaning in a t-SNE
+map, so the map is backed by a measure computed on the full features:
+for each image, the share of its 10 nearest neighbours (cosine distance)
+that belong to the same group, which we call \emph{neighbour agreement}.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/e12_fingerprint_map.png}
+\caption{E12: CLIP features of 634 real photographs and 1{,}169
+generated images, mapped with t-SNE, as distributed and after the
+simulated WhatsApp share.}
+\label{fig:e12}
+\end{figure}
+
+Real photographs and generated images occupy clearly separate regions
+(Figure~\ref{fig:e12}): 96\% of the neighbours of a real photograph were
+real and 94\% of the neighbours of a generated image were generated,
+against 35\% and 65\% by chance. After the simulated share the agreement
+fell to 89\% and 85\%, and part of the real photographs moved into the
+region of the generated images, in line with E3 and E6: compression and
+resizing make a photograph resemble a generated image.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lrccc}
+\toprule
+\textbf{Family} & \textbf{Images} & \textbf{Chance} & \textbf{As distributed} & \textbf{After share}\\
+\midrule
+ChatGPT & 303 & 25.9 & 66.9 & 63.2\\
+Gemini & 301 & 25.7 & 78.0 & 68.6\\
+Grok & 71 & 6.1 & 71.4 & 69.7\\
+Midjourney & 90 & 7.7 & 45.2 & 36.9\\
+Flux & 90 & 7.7 & 43.8 & 32.6\\
+Other AI & 314 & 26.9 & 47.5 & 44.3\\
+\bottomrule
+\end{tabular}
+\caption{E12: neighbour agreement among generated images (\% of the 10
+nearest neighbours from the same family). Seedream, Ideogram and Recraft
+are counted as Other AI.}
+\label{tab:e12}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/e12_family_map.png}
+\caption{E12: generated images only; each panel highlights one family.}
+\label{fig:e12-families}
+\end{figure}
+
+Among generated images, every family was more often its own neighbour
+than chance (Table~\ref{tab:e12}, Figure~\ref{fig:e12-families}). Grok,
+represented by a single generator (Aurora), formed one compact group;
+Gemini and ChatGPT formed several groups each, matching their several
+model versions; Midjourney, Flux and the mixed Other AI group overlapped
+most. This agrees with E11, which attributed Grok best and Other AI
+worst. The map does not separate generator traces from image content:
+real and generated images come from different collections and show
+different subjects, so part of the separation may reflect content, a
+limitation shared by all results on these data (E5).
+
 
 
 \section{Error Analysis}
@@ -1747,8 +1864,9 @@ Across all experiments, four patterns explain most of the errors:
         generator depends mainly on whether it, or a close relative, was
         in the training data (E2, E6, E7).
   \item \textbf{Processing hides generator traces.} JPEG compression,
-        resizing and WhatsApp sharing lowered detection of generated
-        images in E3, E6 and E8 and, to a lesser degree, in E10.
+        resizing and sharing through WhatsApp lowered the detection of
+        generated images in E3, E6 and E8 and, to a lesser degree, in
+        E10.
   \item \textbf{Scores shift before rankings do.} In E2, E3, E6 and E8,
         ROC-AUC stayed much higher than accuracy: the detectors still
         ranked generated images above real ones, but processing or new
@@ -1866,7 +1984,9 @@ Mean $|$NPR$|$ & 9.63 & 5.79 & 3.60 & 5.05 & 8.55 & 7.15 & 9.03\\
         fingerprint. For images made with the applications themselves,
         no: the E11 model named the right application for only 5 of our
         62 files. When Content Credentials survive, they name the
-        application with certainty.
+        application with certainty. In the CLIP features, real and
+        generated images form clearly separate groups, and each family
+        is more often its own neighbour than chance (E12).
 \end{description}
 
 Two further lessons came from testing on images we made ourselves. A
