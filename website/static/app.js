@@ -27,6 +27,11 @@ function percent(p) {
 }
 
 let currentImage = null;
+let currentFile = null;
+
+function selectedTiles() {
+  return document.querySelector('input[name="tiles"]:checked').value;
+}
 
 function drawImage(img, tiles, analysedSize) {
   const maxWidth = drop.clientWidth - 32;
@@ -156,6 +161,7 @@ async function analyse(file) {
   document.getElementById("drop-empty").hidden = true;
   document.getElementById("preview-wrap").hidden = false;
 
+  currentFile = file;
   currentImage = null;
   try {
     currentImage = await createImageBitmap(file, { imageOrientation: "from-image" });
@@ -166,6 +172,7 @@ async function analyse(file) {
 
   const form = new FormData();
   form.append("file", file);
+  form.append("tiles", selectedTiles());
   try {
     const response = await fetch(`${API_BASE}/api/analyze`, { method: "POST", body: form });
     const data = await response.json();
@@ -185,6 +192,9 @@ for (const type of ["dragleave", "drop"]) {
   drop.addEventListener(type, (e) => { e.preventDefault(); drop.classList.remove("over"); });
 }
 drop.addEventListener("drop", (e) => e.dataTransfer.files[0] && analyse(e.dataTransfer.files[0]));
+for (const radio of document.querySelectorAll('input[name="tiles"]')) {
+  radio.addEventListener("change", () => currentFile && analyse(currentFile));
+}
 
 async function checkServer() {
   try {

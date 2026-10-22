@@ -40,7 +40,14 @@
 
     <section id="try" class="panel">
       <h2>Try it</h2>
-      <p class="muted">Upload a photo or an AI image (JPEG, PNG, WebP or iPhone HEIC, up to 25 MB); nothing is stored. The file is checked in two ways: its <strong>provenance</strong>, the signed Content Credentials and labels that services such as ChatGPT embed, and its <strong>pixels</strong>, scored in a grid of 224&nbsp;&times;&nbsp;224 tiles at original resolution.</p>
+      <p class="muted">Upload a photo or an AI image (JPEG, PNG, WebP or iPhone HEIC, up to 25 MB); nothing is stored. The file is checked in two ways: its <strong>provenance</strong>, the signed Content Credentials and labels that services such as ChatGPT embed, and its <strong>pixels</strong>, scored in a grid of 224&nbsp;&times;&nbsp;224 tiles at original resolution. More tiles cover more of the image: in our tests on 206 images, 16 tiles caught 91% of AI images against 81% with 9, while about 98% of real photos were still called real.</p>
+
+      <div class="detail" role="radiogroup" aria-label="Analysis detail">
+        <span class="detail-label">Detail</span>
+        <label><input type="radio" name="tiles" value="9"> Fast &middot; 9 tiles</label>
+        <label><input type="radio" name="tiles" value="16" checked> Recommended &middot; 16 tiles</label>
+        <label><input type="radio" name="tiles" value="25"> Maximum &middot; 25 tiles</label>
+      </div>
 
       <div class="try-grid">
         <label id="drop" class="drop" for="file">

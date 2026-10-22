@@ -15,7 +15,7 @@ import numpy as np
 import pillow_heif
 import torch
 import torch.nn.functional as F
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -31,7 +31,13 @@ torch.set_num_threads(int(os.environ.get("TORCH_THREADS", os.cpu_count() or 2)))
 HERE = Path(__file__).parent
 MODEL_REPO = os.environ.get("MODEL_REPO", "tanish-237/ai-image-forensics-models")
 MODEL_DIR = os.environ.get("MODEL_DIR")
-MAX_TILES = int(os.environ.get("MAX_TILES", "9"))
+# Tiles per image. Tested on 206 images (our own AI images, phone photos from 14 unseen models):
+# 9 tiles 89.9% balanced accuracy, 16 tiles 94.3%, 25 tiles 94.6%; 4 tiles was worse and 36 gave no gain.
+TILE_CHOICES = (9, 16, 25)
+# The E11 family guess (ChatGPT, Gemini, Grok, ...) named the right app for only 5 of our 62 own images,
+# so it is off unless SHOW_FAMILIES=1; signed Content Credentials still name the tool when present.
+SHOW_FAMILIES = os.environ.get("SHOW_FAMILIES") == "1"
+MAX_TILES = int(os.environ.get("MAX_TILES", "16"))
 MAX_UPLOAD_MB = 25
 SIZE = 224
 
@@ -111,7 +117,7 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["GET", "P
 
 
 @app.post("/api/analyze")
-async def analyze(file: UploadFile = File(...)):
+async def analyze(file: UploadFile = File(...), tiles: int = Form(MAX_TILES)):
     start = time.time()
     data = await file.read()
     if len(data) > MAX_UPLOAD_MB * 1024 * 1024:
@@ -130,7 +136,9 @@ async def analyze(file: UploadFile = File(...)):
         img = img.resize((max(SIZE, round(width * factor)), max(SIZE, round(height * factor))), Image.BICUBIC)
         notes.append("The image is smaller than 224 pixels and was enlarged, which makes the pixel analysis less reliable.")
 
-    positions = tile_positions(*img.size)
+    if tiles not in TILE_CHOICES:
+        raise HTTPException(400, f"tiles must be one of {TILE_CHOICES}.")
+    positions = tile_positions(*img.size, max_tiles=tiles)
     tiles = np.stack([np.asarray(img.crop((x, y, x + SIZE, y + SIZE))) for x, y in positions])
     emb = detector.embed(tiles)
     tile_scores = detector.score(emb)
@@ -151,7 +159,7 @@ async def analyze(file: UploadFile = File(...)):
         "decided_by": decided_by,
         "provenance": origin,
         "pixels": {"name": detector.name, "probability_ai": pixel_score},
-        "families": detector.attribute(emb) if verdict == "AI-generated" else None,
+        "families": detector.attribute(emb) if SHOW_FAMILIES and verdict == "AI-generated" else None,
         "tiles": [{"x": x, "y": y, "size": SIZE, "probability_ai": float(calibrate(p, detector.threshold))}
                   for (x, y), p in zip(positions, tile_scores)],
         "analysed_size": list(img.size),
@@ -163,7 +171,7 @@ async def analyze(file: UploadFile = File(...)):
 
 @app.get("/api/info")
 def info():
-    return {"model": detector.name, "max_tiles": MAX_TILES}
+    return {"model": detector.name, "max_tiles": MAX_TILES, "tile_choices": list(TILE_CHOICES)}
 
 
 app.mount("/static", StaticFiles(directory=HERE / "static"), name="static")
