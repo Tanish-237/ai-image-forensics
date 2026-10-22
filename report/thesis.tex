@@ -51,7 +51,7 @@ photographs from 57 phone models fixed this, and the final detector
 called 98\% of Android and iPhone photographs real while detecting 97\%
 of ChatGPT and 99\% of Gemini images. Our website combines this detector
 with a check of signed Content Credentials, which identified images
-downloaded from ChatGPT and Gemini with certainty but are removed by sharing. On 62 files we generated ourselves with ChatGPT, Gemini and Grok, including screenshots and WhatsApp copies, the website called 85\% AI-generated.
+downloaded from ChatGPT and Gemini with certainty but are removed by sharing. On 62 files we generated ourselves with ChatGPT, Gemini and Grok, including screenshots and WhatsApp copies, the website called 92\% AI-generated, but attribution of current generators, which reached 67\% on benchmark images, did not transfer to these files.
 
 \prefacesection{Acknowledgements}
 We thank our mentor, Dr. Anuja Dixit, for guidance throughout this project,
@@ -398,15 +398,16 @@ An upload is analysed in two steps:
         settings) also mark an image as generated. Camera EXIF tags are
         shown but never used, because they are easy to edit.
   \item \textbf{Pixels.} If no usable record exists, the image is covered
-        by an evenly spaced grid of up to $3\times3$ tiles of
-        $224\times224$ pixels at its original resolution (E8), each tile
+        by an evenly spaced grid of tiles of $224\times224$ pixels at its
+        original resolution (E8; $4\times4$ by default, $3\times3$ or
+        $5\times5$ selectable, Section~\ref{sec:tiles}), each tile
         is scored by the CLIP-based detector of E10, and the scores are
         averaged. The score is rescaled so that the calibrated threshold
         maps to 50\%, and the tile scores are drawn on the image.
 \end{enumerate}
 The backend is written in Python with FastAPI and runs on our own
 computer during demonstrations, at about 5--9 seconds per image on a
-laptop CPU; a static copy of the page with all experiment results is
+laptop CPU (of which the detector itself takes 3.1 seconds for 16 tiles); a static copy of the page with all experiment results is
 hosted on Hugging Face Spaces and connects to the backend through a
 temporary public link. Uploaded images are analysed in memory and not
 stored. The trained detectors are published in a Hugging Face model
@@ -1595,8 +1596,117 @@ AI-generated. Three findings stand out.
         indoor scenes scored 67--99\%. Many misses were close to the
         threshold (41--50\% for nine of them).
 \end{enumerate}
-All files in this test were generated, so it measures detection only;
-real photographs were tested in E10.
+With the 16-tile grid that the website uses by default since the tile
+test of Section~\ref{sec:tiles}, 57 of the 62 files (92\%) were called
+AI-generated: 16/16 originals, 13/15 screenshots, 14/16 WhatsApp copies
+and 14/15 screenshots sent through WhatsApp (ChatGPT 15/16, Gemini 26/30,
+Grok 16/16). All files in this test were generated, so it measures
+detection only; real photographs were tested in E10 and in
+Section~\ref{sec:tiles}.
+
+\section{Number of Tiles}
+\label{sec:tiles}
+The website covers an image with a grid of $224\times224$ tiles at full
+resolution instead of shrinking the whole image to the detector's input
+size, because shrinking removes the fine detail in which generator traces
+lie (E3). A $3\times3$ grid, however, covers only about a third of a
+typical image. We therefore compared grids of 1 (the centre crop) to 36
+tiles on 206 images: the 64 generated files of Section~\ref{sec:fresh}
+(our 62 and two earlier ChatGPT images) and 142 real files, namely 70
+photographs from 14 phone models that were not used for training (from
+Wikimedia Commons), each as downloaded and after a simulated WhatsApp
+share, and two of our own iPhone images.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Tiles} & \textbf{ROC-AUC} & \textbf{AI detected} & \textbf{Real as real} & \textbf{CPU time}\\
+\midrule
+1 (centre crop) & 0.984 & 93.8 & 91.5 & --\\
+4 & 0.982 & 75.0 & 97.9 & --\\
+9 & 0.992 & 81.2 & 98.6 & 1.8 s\\
+16 & 0.995 & \textbf{90.6} & 97.9 & 3.1 s\\
+25 & \textbf{0.996} & \textbf{90.6} & 98.6 & 4.8 s\\
+36 & \textbf{0.996} & \textbf{90.6} & 97.9 & --\\
+\bottomrule
+\end{tabular}
+\caption{Final detector (E10) with different numbers of tiles on 64 generated and 142 real files (\%, threshold calibrated for nine tiles). CPU time: the detector alone on a laptop. Large images get fewer tiles where the grid does not fit; 36 tiles averaged 30.}
+\label{tab:tiles}
+\end{table}
+
+Going from 9 to 16 tiles raised the share of generated files detected
+from 81.2\% to 90.6\%, with one more false alarm among the 142 real files
+(Table~\ref{tab:tiles}); more than 16 tiles brought no further gain. The
+mean score of the real files hardly changed (0.135 for 9 tiles, 0.136 for
+16), so the calibrated threshold remains valid. A single centre crop
+detected many generated files but also called 8.5\% of the real files
+AI-generated. The website therefore uses 16 tiles by default and lets the
+user choose 9 (faster) or 25.
+
+\section{Attribution of Current Generators (E11)}
+\label{sec:e11}
+E4 attributed images to six generators from 2021 to 2023. E11 trains an
+attribution model for current generators, grouped into families that
+users know: ChatGPT (GPT-4o, GPT Image 1, 1.5 and 2, DALL-E 3), Gemini
+(Nano Banana, Nano Banana Pro, Imagen), Grok (Aurora, Grok 2 Image, Grok
+Imagine), Midjourney, Flux, Seedream, Ideogram, Recraft, other generators
+and real photographs. It is a ten-class logistic regression on the CLIP
+features saved for E8 to E10, with at most 40{,}000 training tiles per
+class and balanced class weights; the family of an image is the one with
+the highest average tile probability.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lrcc}
+\toprule
+\textbf{Family} & \textbf{Test images} & \textbf{As distributed} & \textbf{After share}\\
+\midrule
+ChatGPT & 480 & 70.6 & 84.4\\
+Gemini & 375 & 72.8 & 78.9\\
+Grok & 71 & 100.0 & 100.0\\
+Midjourney & 90 & 90.0 & 87.8\\
+Flux & 90 & 91.1 & 93.3\\
+Seedream & 84 & 91.7 & 90.5\\
+Ideogram & 68 & 66.2 & 80.9\\
+Recraft & 152 & 97.4 & 86.8\\
+Other AI & 801 & 45.9 & 48.1\\
+\midrule
+All generated images & 2{,}211 & 67.1 & 71.6\\
+\bottomrule
+\end{tabular}
+\caption{E11: generated test images attributed to the correct family (\%, nine families; chance 11\%).}
+\label{tab:e11}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/e11_confusion.png}
+\caption{E11: attribution of generated test images to families (\% of each true family).}
+\label{fig:e11}
+\end{figure}
+
+On the held-out test images, 67\% of generated images were attributed to
+the correct family, six times the chance level (Table~\ref{tab:e11},
+Figure~\ref{fig:e11}). Families with one distinctive generator, such as
+Grok (Aurora only), Recraft and Seedream, were recognised best; Other AI,
+which mixes dozens of generators, worst. Within Gemini, Nano Banana Pro
+was attributed correctly for only 34\% of its images.
+
+On our own 62 files, however, the model named the right application for
+only 5 (ChatGPT 0 of 16, Gemini 4 of 30, Grok 1 of 16), fewer than
+chance; ChatGPT images were mostly attributed to Midjourney, Ideogram or
+Gemini. The training images of each family come from a few datasets and
+model versions, and the images produced by the applications today differ
+from them, as E9 showed for real photographs. Attribution therefore
+worked within the benchmark but did not transfer to the applications
+themselves, and the website does not show it. For files that keep their
+Content Credentials, the signed manifest names the application reliably
+(Section~\ref{sec:fresh}).
+
+
 
 \section{Error Analysis}
 \label{sec:errors}
@@ -1748,11 +1858,15 @@ Mean $|$NPR$|$ & 9.63 & 5.79 & 3.60 & 5.05 & 8.55 & 7.15 & 9.03\\
         restored a ROC-AUC of 0.93 after WhatsApp (E8), and the final
         detector reached 0.99 (E10), although with the test generators
         seen in training.
-  \item[RQ4: attribution.] Yes for the generators seen in training: a
-        fine-tuned ResNet-50 named the correct one of seven sources for
-        86.1\% of images (chance 14.3\%), with most confusion between
-        SD15 and Wukong (E4). Each generator also showed a visible,
-        averaged frequency fingerprint.
+  \item[RQ4: attribution.] Within a benchmark, yes: a fine-tuned
+        ResNet-50 named the correct one of seven 2021--2023 sources for
+        86.1\% of images (E4), and a CLIP-based model the correct one of
+        nine current generator families for 67\% (E11; chance 11\%).
+        Each generator also showed a visible, averaged frequency
+        fingerprint. For images made with the applications themselves,
+        no: the E11 model named the right application for only 5 of our
+        62 files. When Content Credentials survive, they name the
+        application with certainty.
 \end{description}
 
 Two further lessons came from testing on images we made ourselves. A
@@ -1775,7 +1889,8 @@ so a pixel detector remains necessary.
   \item WhatsApp was tested with 100 real image pairs and otherwise
         simulated by resizing and JPEG compression; other platforms
         process images differently.
-  \item Attribution covers only the six GenImage generators.
+  \item Attribution of current generators (E11) did not transfer from
+        the benchmark to images made with the applications themselves.
   \item Each configuration was trained once with a fixed random seed,
         so small differences between methods may not be significant.
   \item Our own test (62 files from 16 generated images) is small, and
@@ -1788,8 +1903,9 @@ so a pixel detector remains necessary.
   \item Continual updating: collect images from new generators as they
         are released and retrain, which with frozen CLIP features takes
         minutes once the features are computed.
-  \item Attribution of current generators (ChatGPT, Gemini, Grok,
-        Midjourney) from OpenFake's labels, extending E4.
+  \item Attribution that transfers to the applications: training on
+        images collected from ChatGPT, Gemini and Grok themselves rather
+        than from datasets, and testing on images from other people.
   \item A larger test set collected by ourselves, with images generated
         and photographed by many people and shared through several
         platforms.
