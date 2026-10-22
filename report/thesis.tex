@@ -1658,6 +1658,20 @@ detected many generated files but also called 8.5\% of the real files
 AI-generated. The website therefore uses 16 tiles by default and lets the
 user choose 9 (faster) or 25.
 
+The tile scores are combined by their mean. On the same 206 files with
+16 tiles we compared other rules: the mean of the log-odds, the mean of
+the 8 or 4 most AI-like tiles, the highest tile, and two rules that give
+less weight to tiles with little detail (such as a plain wall), using
+the average difference between neighbouring pixels. At the same number
+of false alarms (3 of 142 real files), the mean detected the most
+generated files (96.9\%, against 92.2--95.3\% for the rules based on the
+highest tiles and 81.2--84.4\% for the detail-based rules), and it had
+the highest ROC-AUC together with the log-odds mean and the most AI-like
+half (0.995--0.996). Rules based on the highest tiles mainly shifted the
+threshold: they detected every generated file but called up to 44\% of
+the real files AI-generated. Plain regions therefore carry useful
+evidence, and the mean was kept.
+
 \section{Uncertain Results}
 \label{sec:unsure}
 Most of the remaining errors were close calls: of the nine wrong
