@@ -17,13 +17,19 @@ import torch
 import torch.nn.functional as F
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from huggingface_hub import snapshot_download
 from PIL import Image, ImageOps
 from transformers import CLIPVisionModelWithProjection
 
 import provenance
+
+try:
+    import qrcode
+    import qrcode.image.svg
+except ImportError:  # the QR code for phones is optional
+    qrcode = None
 
 pillow_heif.register_heif_opener()
 torch.set_num_threads(int(os.environ.get("TORCH_THREADS", os.cpu_count() or 2)))
@@ -38,6 +44,13 @@ TILE_CHOICES = (9, 16, 25)
 # so it is off unless SHOW_FAMILIES=1; signed Content Credentials still name the tool when present.
 SHOW_FAMILIES = os.environ.get("SHOW_FAMILIES") == "1"
 MAX_TILES = int(os.environ.get("MAX_TILES", "16"))
+# Pixel scores within 10 points of the decision line are reported as uncertain. In the same 206-image test
+# (16 tiles) 18 images fell in this band, among them 6 of the detector's 9 errors; the band was not tuned.
+UNSURE = (0.40, 0.60)
+# simulated WhatsApp share, as in E9 and E10
+WA_LONG_SIDE, WA_QUALITY = 1600, 80
+# written by run.sh while a public link is open, so the page can show it as a QR code
+PUBLIC_LINK_FILE = HERE / ".public_link"
 MAX_UPLOAD_MB = 25
 SIZE = 224
 
@@ -99,6 +112,24 @@ def tile_positions(width, height, max_tiles=MAX_TILES):
     return [(int(x), int(y)) for y in ys for x in xs]
 
 
+def share_like_whatsapp(data):
+    """The file as WhatsApp sends it: long side at most 1600 pixels, JPEG quality 80, no metadata."""
+    img = ImageOps.exif_transpose(Image.open(io.BytesIO(data))).convert("RGB")
+    scale = min(1.0, WA_LONG_SIDE / max(img.size))
+    if scale < 1:
+        img = img.resize((round(img.width * scale), round(img.height * scale)), Image.BICUBIC)
+    out = io.BytesIO()
+    img.save(out, "JPEG", quality=WA_QUALITY)
+    return out.getvalue()
+
+
+def public_link():
+    try:
+        return PUBLIC_LINK_FILE.read_text().strip() or None
+    except OSError:
+        return None
+
+
 def model_folder():
     if MODEL_DIR:
         return MODEL_DIR
@@ -117,12 +148,14 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["GET", "P
 
 
 @app.post("/api/analyze")
-async def analyze(file: UploadFile = File(...), tiles: int = Form(MAX_TILES)):
+async def analyze(file: UploadFile = File(...), tiles: int = Form(MAX_TILES), share: bool = Form(False)):
     start = time.time()
     data = await file.read()
     if len(data) > MAX_UPLOAD_MB * 1024 * 1024:
         raise HTTPException(413, f"Please upload an image smaller than {MAX_UPLOAD_MB} MB.")
     try:
+        if share:
+            data = share_like_whatsapp(data)
         original = Image.open(io.BytesIO(data))
         origin = provenance.check(data, original)
         img = ImageOps.exif_transpose(original).convert("RGB")
@@ -150,6 +183,9 @@ async def analyze(file: UploadFile = File(...), tiles: int = Form(MAX_TILES)):
         verdict, decided_by = "Real photograph", "credentials"
     else:
         verdict, decided_by = ("AI-generated" if pixel_score >= 0.5 else "Real photograph"), "pixels"
+    leans = None
+    if decided_by == "pixels" and UNSURE[0] <= pixel_score < UNSURE[1]:
+        verdict, leans = "Uncertain", verdict
     if origin["credentials"] and origin["credentials"]["state"] == "Invalid":
         notes.append("The file carries Content Credentials, but they do not match the image (it was changed after "
                      "signing, or the signature is broken), so they were not used.")
@@ -157,6 +193,8 @@ async def analyze(file: UploadFile = File(...), tiles: int = Form(MAX_TILES)):
     return {
         "verdict": verdict,
         "decided_by": decided_by,
+        "leans": leans,
+        "shared": share,
         "provenance": origin,
         "pixels": {"name": detector.name, "probability_ai": pixel_score},
         "families": detector.attribute(emb) if SHOW_FAMILIES and verdict == "AI-generated" else None,
@@ -164,6 +202,7 @@ async def analyze(file: UploadFile = File(...), tiles: int = Form(MAX_TILES)):
                   for (x, y), p in zip(positions, tile_scores)],
         "analysed_size": list(img.size),
         "original_size": [width, height],
+        "file_bytes": len(data),
         "notes": notes,
         "seconds": round(time.time() - start, 2),
     }
@@ -171,7 +210,18 @@ async def analyze(file: UploadFile = File(...), tiles: int = Form(MAX_TILES)):
 
 @app.get("/api/info")
 def info():
-    return {"model": detector.name, "max_tiles": MAX_TILES, "tile_choices": list(TILE_CHOICES)}
+    return {"model": detector.name, "max_tiles": MAX_TILES, "tile_choices": list(TILE_CHOICES),
+            "uncertain": list(UNSURE), "public_link": public_link()}
+
+
+@app.get("/api/qr")
+def qr():
+    """QR code of the public link, so that a visitor can open the page on a phone."""
+    link = public_link()
+    if not link or qrcode is None:
+        raise HTTPException(404, "No public link is open.")
+    svg = qrcode.make(link, image_factory=qrcode.image.svg.SvgPathImage, border=2).to_string()
+    return Response(svg, media_type="image/svg+xml", headers={"Cache-Control": "no-store"})
 
 
 app.mount("/static", StaticFiles(directory=HERE / "static"), name="static")

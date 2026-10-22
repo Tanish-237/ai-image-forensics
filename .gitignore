@@ -4,6 +4,7 @@ data_clean/
 *.heic
 *.HEIC
 hf_cache/
+website/.public_link
 
 # Python
 __pycache__/

@@ -17,9 +17,12 @@ function show(name) {
   for (const [key, el] of Object.entries(views)) el.hidden = key !== name;
 }
 
+function cssVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
 function colourFor(p) {
-  const style = getComputedStyle(document.documentElement);
-  return p >= 0.5 ? style.getPropertyValue("--ai").trim() : style.getPropertyValue("--real").trim();
+  return cssVar(p >= 0.5 ? "--ai" : "--real");
 }
 
 function percent(p) {
@@ -28,6 +31,7 @@ function percent(p) {
 
 let currentImage = null;
 let currentFile = null;
+let currentResult = null;
 
 function selectedTiles() {
   return document.querySelector('input[name="tiles"]:checked').value;
@@ -68,7 +72,24 @@ const BASIS = {
   credentials: "Decided by the file's signed Content Credentials.",
   label: "Decided by an AI label in the file's metadata (unsigned).",
   pixels: "Decided by the pixel detector, because the file carries no usable provenance information.",
+  uncertain: "The pixel score is between 40% and 60%, where most of the detector's mistakes fell in our tests, so the lean is only a weak hint. The file carries no usable provenance information.",
 };
+
+const DECIDED_BY = { credentials: "Content Credentials", label: "AI label", pixels: "Pixel detector" };
+
+function verdictText(result) {
+  if (result.verdict !== "Uncertain") return result.verdict;
+  return `Not sure, leans ${result.leans === "AI-generated" ? "AI" : "real"}`;
+}
+
+function verdictColour(result) {
+  if (result.verdict === "Uncertain") return cssVar("--warn");
+  return colourFor(result.verdict === "AI-generated" ? 1 : 0);
+}
+
+function formatBytes(n) {
+  return n >= 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.round(n / 1024)} KB`;
+}
 
 function formatDate(iso) {
   const d = new Date(iso);
@@ -103,9 +124,9 @@ function evidenceItems(p) {
 
 function render(result) {
   const verdict = document.getElementById("verdict");
-  verdict.textContent = result.verdict;
-  verdict.style.color = colourFor(result.verdict === "AI-generated" ? 1 : 0);
-  document.getElementById("basis").textContent = BASIS[result.decided_by];
+  verdict.textContent = verdictText(result);
+  verdict.style.color = verdictColour(result);
+  document.getElementById("basis").textContent = BASIS[result.verdict === "Uncertain" ? "uncertain" : result.decided_by];
 
   const list = document.getElementById("provenance");
   list.innerHTML = "";
@@ -123,7 +144,7 @@ function render(result) {
   document.getElementById("meter-fill").style.left = `${p * 100}%`;
   document.getElementById("prob").textContent = `AI score ${percent(p)}`;
   document.getElementById("pixel-name").textContent =
-    `${result.pixels.name}. Calibrated so that 50% is the decision line.`;
+    `${result.pixels.name}. Calibrated so that 50% is the decision line; scores in the dashed range (40–60%) are reported as uncertain.`;
 
   const familiesBlock = document.getElementById("families-block");
   const families = document.getElementById("families");
@@ -136,7 +157,7 @@ function render(result) {
     li.children[1].textContent = percent(f.probability);
     const fill = li.querySelector(".fill");
     fill.style.width = `${f.probability * 100}%`;
-    fill.style.background = getComputedStyle(document.documentElement).getPropertyValue("--ai").trim();
+    fill.style.background = cssVar("--ai");
     families.appendChild(li);
   }
 
@@ -155,8 +176,58 @@ function render(result) {
   show("body");
 }
 
+async function request(file, share) {
+  const form = new FormData();
+  form.append("file", file);
+  form.append("tiles", selectedTiles());
+  if (share) form.append("share", "true");
+  const response = await fetch(`${API_BASE}/api/analyze`, { method: "POST", body: form });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.detail || "The image could not be analysed.");
+  return data;
+}
+
+function credentialsText(c) {
+  if (!c) return "None";
+  if (c.state === "Invalid") return "Present, but broken";
+  return `${c.ai ? "Signed: made by AI" : c.camera ? "Signed: camera" : "Signed"}${c.tool ? ` (${c.tool})` : ""}`;
+}
+
+function renderCompare(before, after) {
+  const rows = [
+    ["Verdict", verdictText],
+    ["Decided by", (r) => DECIDED_BY[r.decided_by]],
+    ["Content Credentials", (r) => credentialsText(r.provenance.credentials)],
+    ["Pixel AI score", (r) => percent(r.pixels.probability_ai)],
+    ["Image size", (r) => r.original_size.join(" × ")],
+    ["File size", (r) => formatBytes(r.file_bytes)],
+  ];
+  const body = document.querySelector("#compare tbody");
+  body.innerHTML = "";
+  for (const [name, value] of rows) {
+    const tr = document.createElement("tr");
+    for (const text of [name, value(before), value(after)]) {
+      const cell = document.createElement(tr.children.length ? "td" : "th");
+      cell.textContent = text;
+      tr.appendChild(cell);
+    }
+    if (name === "Verdict") {
+      tr.children[1].style.color = verdictColour(before);
+      tr.children[2].style.color = verdictColour(after);
+    }
+    body.appendChild(tr);
+  }
+  document.getElementById("compare").hidden = false;
+}
+
+function resetShare() {
+  document.getElementById("compare").hidden = true;
+  document.getElementById("share-error").hidden = true;
+}
+
 async function analyse(file) {
   if (fileInput.disabled) return;
+  resetShare();
   show("busy");
   document.getElementById("drop-empty").hidden = true;
   document.getElementById("preview-wrap").hidden = false;
@@ -170,14 +241,9 @@ async function analyse(file) {
     ctx.clearRect(0, 0, canvas.width, canvas.height); // e.g. HEIC in browsers that cannot display it
   }
 
-  const form = new FormData();
-  form.append("file", file);
-  form.append("tiles", selectedTiles());
   try {
-    const response = await fetch(`${API_BASE}/api/analyze`, { method: "POST", body: form });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.detail || "The image could not be analysed.");
-    render(data);
+    currentResult = await request(file, false);
+    render(currentResult);
   } catch (err) {
     views.error.textContent = err.message;
     show("error");
@@ -196,13 +262,53 @@ for (const radio of document.querySelectorAll('input[name="tiles"]')) {
   radio.addEventListener("change", () => currentFile && analyse(currentFile));
 }
 
+const shareButton = document.getElementById("share-btn");
+shareButton.addEventListener("click", async () => {
+  if (!currentFile || !currentResult) return;
+  const label = shareButton.textContent;
+  shareButton.disabled = true;
+  shareButton.textContent = "Analysing the shared copy…";
+  resetShare();
+  try {
+    renderCompare(currentResult, await request(currentFile, true));
+  } catch (err) {
+    const error = document.getElementById("share-error");
+    error.textContent = err.message;
+    error.hidden = false;
+  } finally {
+    shareButton.disabled = false;
+    shareButton.textContent = label;
+  }
+});
+
+for (const button of document.querySelectorAll(".sample")) {
+  button.addEventListener("click", async () => {
+    if (fileInput.disabled) return;
+    try {
+      const response = await fetch(`/static/samples/${button.dataset.file}`);
+      if (!response.ok) throw new Error();
+      const blob = await response.blob();
+      document.getElementById("try").scrollIntoView();
+      analyse(new File([blob], button.dataset.file, { type: blob.type }));
+    } catch {
+      views.error.textContent = "The sample image could not be loaded.";
+      show("error");
+    }
+  });
+}
+
 async function checkServer() {
   try {
     const response = await fetch(`${API_BASE}/api/info`);
     if (!response.ok) throw new Error();
-    await response.json();
+    const info = await response.json();
+    if (info.public_link) {
+      document.getElementById("qr").src = `${API_BASE}/api/qr`;
+      document.getElementById("phone").hidden = false;
+    }
   } catch {
     fileInput.disabled = true;
+    document.querySelector(".samples").classList.add("offline");
     drop.classList.add("offline");
     document.getElementById("drop-empty").innerHTML =
       "<strong>The live detector is offline</strong><span class='muted'>It runs on our own computer and is switched on during demonstrations. The results of our experiments are below.</span>";

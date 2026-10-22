@@ -14,14 +14,14 @@ if [ ! -x "$VENV/bin/python" ]; then
   "$PY" -m venv "$VENV"
   "$VENV/bin/pip" install --quiet --upgrade pip
 fi
-if ! "$VENV/bin/python" -c "import torch, fastapi, uvicorn, multipart, pillow_heif, transformers, c2pa" 2> /dev/null; then
+if ! "$VENV/bin/python" -c "import torch, fastapi, uvicorn, multipart, pillow_heif, transformers, c2pa, qrcode" 2> /dev/null; then
   echo "Installing the required packages (a few minutes)..."
-  "$VENV/bin/pip" install --quiet torch fastapi uvicorn python-multipart pillow pillow-heif transformers huggingface_hub numpy c2pa-python
+  "$VENV/bin/pip" install --quiet torch fastapi uvicorn python-multipart pillow pillow-heif transformers huggingface_hub numpy c2pa-python qrcode
 fi
 
 "$VENV/bin/uvicorn" app:app --host 127.0.0.1 --port $PORT &
 SERVER=$!
-trap 'kill $SERVER $WATCHER 2>/dev/null; pkill -f "cloudflared tunnel --url http://localhost:$PORT" 2>/dev/null' EXIT
+trap 'rm -f .public_link; kill $SERVER $WATCHER 2>/dev/null; pkill -f "cloudflared tunnel --url http://localhost:$PORT" 2>/dev/null' EXIT
 
 echo "Loading models..."
 until curl -s "http://localhost:$PORT/api/info" > /dev/null; do
@@ -44,6 +44,7 @@ if [ "$1" == "--public" ]; then
     echo
     echo "Public link (while this window stays open): $URL"
     echo "Hosted page with live analysis:             $SITE/?api=$URL"
+    echo "$SITE/?api=$URL" > .public_link  # shown on the page as a QR code
     echo
   }
   open_tunnel

@@ -7,3 +7,4 @@ pillow-heif==0.18.0
 transformers==4.44.2
 huggingface_hub==0.24.6
 c2pa-python==0.38.0
+qrcode==8.2

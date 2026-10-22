@@ -47,6 +47,13 @@
         <label><input type="radio" name="tiles" value="9"> Fast &middot; 9 tiles</label>
         <label><input type="radio" name="tiles" value="16" checked> Recommended &middot; 16 tiles</label>
         <label><input type="radio" name="tiles" value="25"> Maximum &middot; 25 tiles</label>
+        <details id="phone" class="phone" hidden>
+          <summary>Open on a phone</summary>
+          <div class="phone-body">
+            <img id="qr" alt="QR code of the public link to this page" width="176" height="176">
+            <p class="muted small">Scan to analyse a photo from your own phone.</p>
+          </div>
+        </details>
       </div>
 
       <div class="try-grid">
@@ -78,7 +85,7 @@
             <ul id="provenance" class="evidence"></ul>
 
             <p class="label">Pixel detector</p>
-            <div class="meter"><div id="meter-fill"></div><div class="meter-mid"></div></div>
+            <div class="meter"><div class="meter-band"></div><div id="meter-fill"></div><div class="meter-mid"></div></div>
             <div class="meter-labels"><span>Real</span><span id="prob"></span><span>AI-generated</span></div>
             <p id="pixel-name" class="muted small"></p>
 
@@ -89,7 +96,28 @@
 
             <p id="notes" class="note"></p>
             <p id="meta" class="muted small"></p>
+
+            <div class="share">
+              <button id="share-btn" type="button" class="button">Simulate a WhatsApp share</button>
+              <p class="muted small">Re-saves the image as WhatsApp does (at most 1600 pixels, JPEG quality 80, metadata removed) and analyses it again.</p>
+              <p id="share-error" class="error small" hidden></p>
+              <table id="compare" class="compare" hidden>
+                <thead><tr><th></th><th>As uploaded</th><th>After WhatsApp</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
           </div>
+        </div>
+      </div>
+      <div class="samples">
+        <span class="detail-label">No image at hand? Try one of ours</span>
+        <div class="sample-row">
+          <button type="button" class="sample" data-file="iphone_whatsapp.jpg"><img src="/static/samples/thumbs/iphone_whatsapp.jpg" alt="" loading="lazy"><span>iPhone photo, sent on WhatsApp</span></button>
+          <button type="button" class="sample" data-file="chatgpt_download.png"><img src="/static/samples/thumbs/chatgpt_download.jpg" alt="" loading="lazy"><span>ChatGPT, as downloaded</span></button>
+          <button type="button" class="sample" data-file="chatgpt_whatsapp.jpg"><img src="/static/samples/thumbs/chatgpt_whatsapp.jpg" alt="" loading="lazy"><span>The same ChatGPT image after WhatsApp</span></button>
+          <button type="button" class="sample" data-file="gemini_screenshot.jpg"><img src="/static/samples/thumbs/gemini_screenshot.jpg" alt="" loading="lazy"><span>Gemini, screenshot on a phone</span></button>
+          <button type="button" class="sample" data-file="grok_app.jpg"><img src="/static/samples/thumbs/grok_app.jpg" alt="" loading="lazy"><span>Grok, from the phone app</span></button>
+          <button type="button" class="sample" data-file="gemini_street_whatsapp.jpg"><img src="/static/samples/thumbs/gemini_street_whatsapp.jpg" alt="" loading="lazy"><span>Gemini street scene after WhatsApp (hard case)</span></button>
         </div>
       </div>
       <p class="disclaimer">Research prototype. Missing Content Credentials do not mean that an image is real: messaging apps, screenshots and most editors remove them. Our experiments show that pixel detectors are less reliable on unfamiliar generators and on images that were resized, compressed or shared. Do not use a single result as proof.</p>
@@ -112,6 +140,13 @@
           <h3>Each generator leaves a visible pattern</h3>
           <p>Averaging the frequency spectrum of the noise left after removing image content shows a distinct pattern for every generator. Our attribution model names the right one of seven sources 86.1% of the time (chance: 14.3%).</p>
           <img src="/static/figures/05_spectra.png" alt="Average noise spectra of real images and six generators" loading="lazy">
+        </article>
+
+        <article class="card wide">
+          <span class="tag">Fingerprint map</span>
+          <h3>Real photos and AI images live in different places</h3>
+          <p>Each dot is one test image, placed by its CLIP features so that similar images lie close together. 96% of the nearest neighbours of a real photo were real and 94% of those of an AI image were AI (chance: 35% and 65%). After a simulated WhatsApp share, some real photos drift towards the AI images, which is why shared photos are harder.</p>
+          <img src="/static/figures/e12_fingerprint_map.png" alt="Map of real and generated images by their CLIP features, before and after a WhatsApp share" loading="lazy">
         </article>
 
         <article class="card">
@@ -170,6 +205,11 @@
           <h3>53 of 62 of our own AI images caught, including screenshots and WhatsApp copies</h3>
           <p>After training was finished we generated 16 new images with ChatGPT, Gemini and Grok, on phones and on a desktop, and tested each one as downloaded, as a screenshot, after WhatsApp and as a screenshot sent through WhatsApp. Every original was identified, mostly from its Content Credentials (ChatGPT and Gemini sign their images; Grok signed only the desktop downloads, with an unverifiable self-signed certificate). Without that record the pixel detector still caught 50 of 62 files: all 16 from Grok and 14 of 16 from ChatGPT. Its weak spot was photorealistic outdoor scenes from Gemini, such as a street, a lake at sunset and a lion.</p>
         </article>
+        <article class="card wide">
+          <span class="tag">Close calls</span>
+          <h3>When the score is close to 50%, the site says &ldquo;not sure&rdquo;</h3>
+          <p>Six of the detector&rsquo;s nine wrong decisions in our 206-file tile test had a score between 40% and 60%. Reporting such scores as uncertain left 18 files (9%) undecided, and the confident decisions were correct for 185 of 188 files (98.4%) instead of 197 of 206 (95.6%).</p>
+        </article>
       </div>
     </section>
 
@@ -180,7 +220,7 @@
         <li><strong>Three generations of detectors.</strong> A fine-tuned ResNet-50 (Wang et al., 2020), frozen CLIP features with a linear classifier (Ojha et al., 2023) and NPR, which looks at differences between neighbouring pixels (Tan et al., 2024), plus their combination.</li>
         <li><strong>Stress tests.</strong> Unseen generators, JPEG, resizing and blur, 2024&ndash;26 generators from OpenFake, and real sharing through WhatsApp.</li>
         <li><strong>Attribution.</strong> A seven-class model that names the source of an image.</li>
-        <li><strong>This website.</strong> First the file's provenance is read. ChatGPT and a growing number of other generators and cameras attach Content Credentials (C2PA): a record of how the image was made, signed with a certificate. If the signature is valid and the image has not been changed since signing, the record decides the verdict. Unsigned AI labels in the metadata are also reported. If there is no such evidence, which is the case for any image that was shared through a messaging app, the pixels decide: the image is split into a grid of up to nine tiles at full resolution, each tile is scored by a CLIP-based detector, and the scores are averaged. The detector was trained on about 89,000 images: OpenFake (including GPT Image 1.5 and 2, Nano Banana Pro and Grok&rsquo;s Aurora), real photographs from 57 Android and iPhone models and other cameras, and ChatGPT and Gemini images, each also in a simulated WhatsApp-shared version. Its threshold was calibrated on separate images.</li>
+        <li><strong>This website.</strong> First the file's provenance is read. ChatGPT and a growing number of other generators and cameras attach Content Credentials (C2PA): a record of how the image was made, signed with a certificate. If the signature is valid and the image has not been changed since signing, the record decides the verdict. Unsigned AI labels in the metadata are also reported. If there is no such evidence, which is the case for any image that was shared through a messaging app, the pixels decide: the image is split into a grid of 16 tiles at full resolution (9 or 25 can be chosen), each tile is scored by a CLIP-based detector, and the scores are averaged. Scores between 40% and 60% are reported as uncertain, because most of the detector&rsquo;s mistakes in our tests fell in this range. The detector was trained on about 89,000 images: OpenFake (including GPT Image 1.5 and 2, Nano Banana Pro and Grok&rsquo;s Aurora), real photographs from 57 Android and iPhone models and other cameras, and ChatGPT and Gemini images, each also in a simulated WhatsApp-shared version. Its threshold was calibrated on separate images.</li>
       </ol>
     </section>
 
