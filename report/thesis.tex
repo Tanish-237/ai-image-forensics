@@ -6,8 +6,36 @@
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{url}
+\usepackage[hidelinks,bookmarksnumbered,bookmarksopen,bookmarksopenlevel=0,plainpages=false,pdfpagelabels]{hyperref}
 % The class loads natbib with both 'numbers' and 'authoryear'; the ACM style needs numbers.
 \setcitestyle{numbers,square,sort}
+% Keep the undertaking heading and its text on one page with five authors.
+\makeatletter
+\def\undertakingpage{\newpage%
+    \renewcommand{\baselinestretch}{1.3}
+    \vspace*{\fill}
+    \centerline{\LARGE\bf UNDERTAKING}
+    \vspace{1.5cm}
+    \begin{center}
+    \begin{minipage}{4.5in}
+    \parindent=0pt
+    I declare that the work presented in this report titled
+    ``{\sl\@title}'', submitted to the \mbox{\@dept} Department, \@college, for 
+    the award of the {\bf\emph \@degree} \ degree in \mbox{\bf\emph \@specialization}, 
+    is my original work. I have not plagiarized or submitted the same work for 
+    the award of any other degree. In case this undertaking is found incorrect, I accept 
+    that my degree may be unconditionally withdrawn.\par
+    \vspace*{2cm}
+    \@submitdate\\Allahabad\par
+    \hbox to 4.5in {
+    \hfill\vbox{\hsize 3in\vrule width 3in height0.4pt\vspace*{-4mm}\par\center{(\@author)}}}
+    \end{minipage}
+    \end{center}
+}
+\makeatother
+% Start the certificate on its own page.
+\let\classsignaturepage\signaturepage
+\def\signaturepage{\newpage\classsignaturepage}
 
 \begin{document}
 \title{Detecting and Attributing AI-Generated Images: A Forensic Fingerprinting Study}
@@ -19,8 +47,6 @@ Ashish Meena (20223058)}
 \supervisor{Dr. Anuja Dixit}
 
 \specialization{Computer Science \& Engineering}
-\figurespagetrue
-\tablespagetrue
 \beforepreface
 
 % ------------------------------------------------------------------
@@ -1471,8 +1497,8 @@ simulated share it detected 90.0\% of GPT Image~2 images (E8: 66.7\%),
 
 Our own images told a different story. The iPhone photograph received an
 AI score of 62\% and was called AI-generated, with six of its nine
-tiles above 80\%. All real images in OpenFake come from two collections,
-DOCCI and ImageNet, so the detector had learned what \emph{those}
+tiles above 80\%. All real images in OpenFake come from four collections,
+LAION, Pexels, DOCCI and ImageNet, so the detector had learned what \emph{those}
 photographs look like; a 24-megapixel phone photograph, with its own
 sharpening and noise reduction, lay outside that range. E10 measures how
 large this problem is and addresses it.
@@ -1581,7 +1607,7 @@ Figure~\ref{fig:e10} leads to four observations.
         of the Unsplash phone photographs and 28.0\% of the other camera
         photographs real. Over all new test sources its ROC-AUC was
         0.921. A detector is only as good as the range of its
-        \emph{real} training images, and two photograph collections are
+        \emph{real} training images, and four photograph collections are
         not enough.
   \item \textbf{Adding real-world photographs fixed it without losing
         the new generators.} E10 called 98--99\% of the phone and camera
