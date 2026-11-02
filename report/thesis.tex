@@ -6,7 +6,51 @@
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{url}
+\usepackage{etoolbox}
+% Names and product terms are never split across lines.
+\hyphenation{Tanish Mittal Vanshika Gautam Shashank Kanaujiya Utkarsh Singh Ashish Meena
+Anuja Dixit Motilal Nehru Allahabad Prayagraj Digital Media Fingerprinting Identification
+BigGAN ChatGPT OpenAI OpenFake ImageNet GenImage GLIDE VQDM Wukong Midjourney WhatsApp
+Gemini Grok Aurora Recraft Ideogram Seedream Illustrious Lumina Unsplash Pexels LAION DOCCI
+Wikimedia Commons Android iPhone Samsung Xiaomi OnePlus Realme Huawei Infinix Google
+ResNet Credentials Provenance Figure Figures Table Tables Grommelt Livernoche Verdoliva
+Ojha Marra Fridrich Goljan Salvail Caron Godbout Arodi Musulan Rabbany Pfreundt Keuper
+Gragnaniello Neighbouring Content October}
+\usepackage[section]{placeins}
+% Lets TeX loosen a line slightly instead of pushing a long name past the margin.
+\setlength{\emergencystretch}{2em}
+% Keeps a line that introduces a list on the same page as the list.
+\makeatletter\newcommand{\keepwithlist}{\@beginparpenalty=10000 }\makeatother
+% Let figures sit closer to the text that discusses them.
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\textfraction}{0.1}
+\renewcommand{\floatpagefraction}{0.75}
+\setcounter{topnumber}{3}
+\setcounter{bottomnumber}{2}
+\setcounter{totalnumber}{4}
+\usepackage{pdfpages}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric}
+\tikzset{
+  flow/.style={>={Stealth[length=2mm]},every node/.style={font=\small\linespread{1}\selectfont,align=center,execute at begin node={\hyphenpenalty=10000 }}},
+  box/.style={draw,rectangle,rounded corners=1pt,fill=gray!10,inner sep=4pt,minimum height=8mm},
+  start/.style={draw,rectangle,rounded corners=3mm,fill=gray!25,inner sep=4pt,minimum height=8mm},
+  check/.style={draw,diamond,aspect=2.4,fill=white,inner sep=0pt},
+  line/.style={->,thick}
+}
+% Table captions sit above the table, so the gap goes below the caption.
+\AtBeginEnvironment{table}{\setlength{\abovecaptionskip}{0pt}\setlength{\belowcaptionskip}{8pt}}
 \usepackage[hidelinks,bookmarksnumbered,bookmarksopen,bookmarksopenlevel=0,plainpages=false,pdfpagelabels]{hyperref}
+\hypersetup{
+  pdftitle={Digital Media Fingerprinting and Source Identification},
+  pdfauthor={Tanish Mittal, Vanshika Gautam, Shashank Kanaujiya, Utkarsh Raj Singh, Ashish Meena},
+  pdfsubject={B.Tech Minor Project Report, Computer Science and Engineering, MNNIT Allahabad},
+  pdfkeywords={AI-generated image detection, digital image forensics, generator fingerprints, source identification, Content Credentials},
+  pdflang={en},
+  pdfdisplaydoctitle=true,
+  pdfpagemode=UseOutlines
+}
 % The class loads natbib with both 'numbers' and 'authoryear'; the ACM style needs numbers.
 \setcitestyle{numbers,square,sort}
 % Keep the undertaking heading and its text on one page with five authors.
@@ -38,7 +82,7 @@
 \def\signaturepage{\newpage\classsignaturepage}
 
 \begin{document}
-\title{Detecting and Attributing AI-Generated Images: A Forensic Fingerprinting Study}
+\title{Digital Media Fingerprinting and Source Identification}
 \author{Tanish Mittal (20233288)\\
 Vanshika Gautam (20233305)\\
 Shashank Kanaujiya (20233259)\\
@@ -51,13 +95,14 @@ Ashish Meena (20223058)}
 
 % ------------------------------------------------------------------
 \prefacesection{Abstract}
+{\renewcommand{\baselinestretch}{1.1}\selectfont
 AI image generators now produce photorealistic images, which raises a
 forensic question: was an image captured by a camera, or produced by a
 generative model, and if so, by which one? This project treats
 AI-generated image detection as a \emph{source identification} problem,
 in which the generator plays the role that a camera plays in classical
 media forensics. We compare three generations of detectors (a fine-tuned
-ResNet-50, frozen CLIP features with a linear classifier and the NPR
+\mbox{ResNet-50}, frozen CLIP features with a linear classifier and the NPR
 forensic residual) on known and unseen generators, under JPEG
 compression, resizing and blur, and for attribution to a specific
 generator, and then test them on current generators and on images shared
@@ -69,11 +114,11 @@ popular benchmark without correction lost 19.9 percentage points
 (98.8\% to 78.9\%) once the AI images were compressed like the real
 ones. On de-biased data all detectors exceeded 96\% accuracy and
 attribution to one of seven sources reached 86.1\%. Detectors trained on
-2021--2023 generators fell to a ROC-AUC of 0.72--0.75 on 2024--2026
+2021--2023 generators fell to a \mbox{ROC-AUC} of 0.72--0.75 on 2024--2026
 generators and close to chance after WhatsApp sharing, while resizing
 and blur made real photographs look generated. Training on recent
-generators and analysing the whole image restored a ROC-AUC of 0.93 after
-sharing. A detector with a ROC-AUC of 0.999 on a benchmark still called
+generators and analysing the whole image restored a \mbox{ROC-AUC} of 0.93 after
+sharing. A detector with a \mbox{ROC-AUC} of 0.999 on a benchmark still called
 more than half of the Unsplash phone photographs and 72\% of the camera
 photographs AI-generated; adding real-world
 photographs from 57 phone models fixed this, and the final detector
@@ -85,6 +130,8 @@ sharing. On 62 files we generated ourselves with ChatGPT, Gemini and
 Grok, including screenshots and WhatsApp copies, the website called 92\%
 AI-generated. Attribution of current generators reached 67\% on
 benchmark images but did not transfer to these files.
+
+\par}
 
 \prefacesection{Acknowledgements}
 We thank our mentor, Dr. Anuja Dixit, for guidance throughout this project,
@@ -117,8 +164,13 @@ generator. The decision should remain reliable for generators not seen
 during training and after common image processing.
 
 \section{Research Questions}
-\begin{table}[h]
+Table~\ref{tab:rq} lists our four research questions and the question each one
+corresponds to in classical source identification.
+
+\begin{table}[htbp]
 \centering
+\caption{Research questions mapped to classical source identification.}
+\label{tab:rq}
 \small
 \begin{tabular}{p{0.8cm}p{6.3cm}p{5.5cm}}
 \toprule
@@ -130,8 +182,6 @@ RQ3 & How does performance change under JPEG compression, resizing and blur? & C
 RQ4 & Can it identify \emph{which} generator produced an image? & Camera model identification\\
 \bottomrule
 \end{tabular}
-\caption{Research questions mapped to classical source identification.}
-\label{tab:rq}
 \end{table}
 
 \section{Contributions}
@@ -148,7 +198,7 @@ RQ4 & Can it identify \emph{which} generator produced an image? & Camera model i
         simple combination of the last two, on known and unseen
         generators and under common image processing.
   \item A ``then versus now'' study: detectors trained on 2021--2023
-        generators tested on 2025--2026 generators, and, conversely,
+        generators tested on 2024--2026 generators, and, conversely,
         detectors trained on current generators.
   \item A real-world sharing test in which real and generated images are
         sent through WhatsApp before detection.
@@ -194,7 +244,7 @@ generative model.
 
 \section{Learned Detectors}
 Wang \emph{et al.}~\cite{wang2020cnn} trained a standard image
-classifier (ResNet-50) on images from a single GAN and reported that,
+classifier (\mbox{ResNet-50}) on images from a single GAN and reported that,
 with suitable pre-processing and data augmentation, it generalised to
 other CNN-based generators. Ojha \emph{et al.}~\cite{ojha2023universal}
 observed that detectors trained in this way fail to generalise to newer
@@ -208,7 +258,7 @@ neighbouring pixels. Their Neighbouring Pixel Relationships (NPR)
 representation subtracts from an image a copy that has been
 down-sampled and up-sampled again, which removes most scene content and
 keeps these local traces. A shallow residual network (the first two
-stages of a ResNet-50) is then trained from scratch on the NPR
+stages of a \mbox{ResNet-50}) is then trained from scratch on the NPR
 representation instead of the raw image.
 
 \subsection*{Provenance records}
@@ -230,7 +280,7 @@ that GenImage contains JPEG-compression and image-size biases, and that
 detectors trained on it learn these biases. They reported that removing
 the biases improved robustness to JPEG compression and raised
 cross-generator performance by more than 11 percentage points for
-ResNet-50 and Swin-T detectors.
+\mbox{ResNet-50} and Swin-T detectors.
 
 OpenFake~\cite{livernoche2025openfake} is a recent benchmark that pairs
 real photographs with images from current proprietary and open-source
@@ -247,6 +297,31 @@ model training and evaluation. Every experiment saves its metrics to a
 shared results folder, from which the tables in this report and the demo
 application are produced.
 
+Figure~\ref{fig:flow-pipeline} shows these stages.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[flow]
+\node[start,text width=2.3cm] (a) {Data collection};
+\node[box,text width=2.3cm,right=4mm of a] (b) {Normalisation};
+\node[box,text width=2.3cm,right=4mm of b] (c) {Splitting};
+\node[box,text width=2.3cm,right=4mm of c] (d) {Model training};
+\node[box,text width=2.3cm,right=4mm of d] (e) {Evaluation};
+\node[box,text width=2.3cm,below=8mm of e] (r) {Results folder};
+\node[start,text width=2.3cm,left=4mm of r] (t) {Report tables};
+\node[start,text width=2.3cm,left=4mm of t] (w) {Demo application};
+\draw[line] (a) -- (b);
+\draw[line] (b) -- (c);
+\draw[line] (c) -- (d);
+\draw[line] (d) -- (e);
+\draw[line] (e) -- (r);
+\draw[line] (r) -- (t);
+\draw[line] (r.south) -- ++(0,-4mm) -| (w.south);
+\end{tikzpicture}
+\caption{Stages of the pipeline.}
+\label{fig:flow-pipeline}
+\end{figure}
+
 \section{Dataset}
 We use Tiny GenImage~\cite{tinygenimage}, a scaled-down version of
 GenImage with 28{,}000 training and 7{,}000 validation images. Each
@@ -256,8 +331,10 @@ no images from SD14; the seven generators present are ADM, BigGAN,
 GLIDE, Midjourney, SD15, VQDM and Wukong. Real images come from
 ImageNet. Table~\ref{tab:inventory} summarises the inventory.
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
+\caption{Inventory of Tiny GenImage.}
+\label{tab:inventory}
 \small
 \setlength{\tabcolsep}{4pt}
 \begin{tabular}{lrrlrr}
@@ -274,8 +351,6 @@ VQDM       & 2{,}000 & 500 & PNG & $256\times256$ & 109\\
 Wukong     & 2{,}000 & 500 & PNG & $512\times512$ & 454\\
 \bottomrule
 \end{tabular}
-\caption{Inventory of Tiny GenImage.}
-\label{tab:inventory}
 \end{table}
 
 The two classes are balanced (14{,}000 real and 14{,}000 generated
@@ -285,6 +360,13 @@ PNG, so the rule ``PNG means fake'' labels all 35{,}000 images correctly.
 Image size is also tied to the source: each generator produces a fixed
 resolution, so size alone separates BigGAN, Midjourney and the real
 images from the rest.
+
+Tiny GenImage covers generators from 2021 to 2023. Later experiments
+therefore add OpenFake~\cite{livernoche2025openfake} (from E6), which
+contains generators up to 2026, and, for the deployed detector, public
+phone, camera, ChatGPT and Gemini collections (E10). These data are
+described with the experiments that use them in
+Chapter~\ref{ch:results}.
 
 \section{Bias Control}
 \label{sec:bias}
@@ -323,14 +405,44 @@ real and generated images differ only in their pixel content.
         sub-sampled to match the number of generated images.
 \end{enumerate}
 
+Figure~\ref{fig:flow-bias} shows these steps in order.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[flow,node distance=5mm]
+\node[start,text width=7cm] (d) {Tiny GenImage: 35{,}000 images};
+\node[box,text width=7cm,below=of d] (f) {\textbf{Filtering:} remove BigGAN, greyscale images and real images below 224 pixels (31{,}108 remain)};
+\node[box,text width=7cm,below=of f] (c) {\textbf{Cropping:} centre crop to $224\times224$ pixels, offset a multiple of 16};
+\node[box,text width=4.6cm,minimum height=19mm,below=9mm of c,xshift=-2.6cm] (r) {\textbf{Real images (JPEG):} keep the existing compression};
+\node[box,text width=4.6cm,minimum height=19mm,below=9mm of c,xshift=2.6cm] (g) {\textbf{Generated images (PNG):} compress once, quality sampled from real training images};
+\node[box,text width=7cm,below=5mm of g,xshift=-2.6cm] (s) {\textbf{Splitting and balancing:} training split divided 85/15, validation split kept as test, real images sub-sampled};
+\node[start,text width=2.1cm,below=of s,xshift=-2.5cm] (t1) {Train\\20{,}400};
+\node[start,text width=2.1cm,below=of s] (t2) {Validation\\3{,}600};
+\node[start,text width=2.1cm,below=of s,xshift=2.5cm] (t3) {Test\\6{,}000};
+\draw[line] (d) -- (f);
+\draw[line] (f) -- (c);
+\draw[line] (c.south) -- ++(0,-3mm) -| (r.north);
+\draw[line] (c.south) -- ++(0,-3mm) -| (g.north);
+\draw[line] (r.south) -- (r.south |- s.north);
+\draw[line] (g.south) -- (g.south |- s.north);
+\draw[line] (s.south) -- ++(0,-2mm) -| (t1.north);
+\draw[line] (s) -- (t2);
+\draw[line] (s.south) -- ++(0,-2mm) -| (t3.north);
+\end{tikzpicture}
+\caption{Steps of the bias control.}
+\label{fig:flow-bias}
+\end{figure}
+
 All real images used standard JPEG quantisation tables. Their quality
 factor is concentrated at 96 (12{,}298 of 17{,}500 images, 70\%), with
 smaller groups at 75, 80, 90, 92 and 85. Table~\ref{tab:splits} gives the
 final split sizes and confirms that the median quality factor is the same
 (96) for both classes in every split.
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
+\caption{Processed dataset: six generators (ADM, GLIDE, Midjourney, SD15, VQDM, Wukong) and real ImageNet images, $224\times224$ pixels.}
+\label{tab:splits}
 \small
 \setlength{\tabcolsep}{4pt}
 \begin{tabular}{lrrrcc}
@@ -343,11 +455,9 @@ Validation & 1{,}800 & 1{,}800 & 300 & 92.4 / 96 & 92.6 / 96\\
 Test & 3{,}000 & 3{,}000 & 500 & 94.1 / 96 & 92.4 / 96\\
 \bottomrule
 \end{tabular}
-\caption{Processed dataset: six generators (ADM, GLIDE, Midjourney, SD15, VQDM, Wukong) and real ImageNet images, $224\times224$ pixels.}
-\label{tab:splits}
 \end{table}
 
-\begin{figure}[h]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{figures/04_processed_samples.png}
 \caption{Processed test images, three per source.}
@@ -365,7 +475,7 @@ varies with the source.
 
 \section{Detection Methods}
 \begin{itemize}
-  \item \textbf{M1, trained CNN:} a ResNet-50 pre-trained on ImageNet
+  \item \textbf{M1, trained CNN:} a \mbox{ResNet-50} pre-trained on ImageNet
         and fine-tuned for real-versus-fake classification, following
         the approach of Wang \emph{et al.}~\cite{wang2020cnn}.
   \item \textbf{M2, frozen CLIP features:} image features from a
@@ -373,7 +483,7 @@ varies with the source.
         Ojha \emph{et al.}~\cite{ojha2023universal}.
   \item \textbf{M3, NPR:} the neighbouring pixel relationship
         representation of Tan \emph{et al.}~\cite{tan2024npr}, fed to a
-        shallow ResNet (the first two stages of ResNet-50) trained from
+        shallow ResNet (the first two stages of \mbox{ResNet-50}) trained from
         scratch, as in the authors' released code.
   \item \textbf{M4, combined detector:} the output scores of M2 and M3
         averaged, so that a semantic detector and a pixel-trace detector
@@ -381,13 +491,47 @@ varies with the source.
         training.
 \end{itemize}
 
+Figure~\ref{fig:flow-detectors} shows how an image passes through each
+detector.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[flow]
+\node[start,text width=1.5cm] (i) at (0,0) {Input image};
+\node[box,text width=5.3cm] (m1) at (5,1.6) {\textbf{M1:} fine-tuned \mbox{ResNet-50}};
+\node[box,text width=2.3cm] (c) at (3.5,0) {\textbf{M2:} frozen CLIP};
+\node[box,text width=2.3cm] (l) at (6.5,0) {Logistic regression};
+\node[box,text width=2.3cm] (n) at (3.5,-1.6) {\textbf{M3:} NPR residual};
+\node[box,text width=2.3cm] (r) at (6.5,-1.6) {Shallow ResNet};
+\node[box,text width=1.4cm] (a) at (9.1,-0.8) {\textbf{M4:} average};
+\node[start,text width=2.1cm,minimum height=45mm] (v) at (12,0) {Probability at least 0.5: generated, otherwise real};
+\draw[line] (i.east) -- ++(4mm,0) |- (m1.west);
+\draw[line] (i) -- (c);
+\draw[line] (i.east) -- ++(4mm,0) |- (n.west);
+\draw[line] (c) -- (l);
+\draw[line] (n) -- (r);
+\draw[line] (m1.east) -- (m1.east -| v.west);
+\draw[line] (l.east) -- (l.east -| v.west);
+\draw[line] (r.east) -- (r.east -| v.west);
+\draw[line] (a.east) -- (a.east -| v.west);
+\fill (a.north |- l.east) circle (0.6mm);
+\fill (a.south |- r.east) circle (0.6mm);
+\draw[line] (a.north |- l.east) -- (a.north);
+\draw[line] (a.south |- r.east) -- (a.south);
+\end{tikzpicture}
+\caption{The four detectors.}
+\label{fig:flow-detectors}
+\end{figure}
+
 The three published methods represent three stages of the field: a
 detector trained on raw pixels (2020), a detector built on a large
 pre-trained vision model (2023), and a detector built on a forensic
 residual (2024).
 
 \section{Training Procedure}
-All trained detectors share one training procedure. Images are scaled
+M1 uses the training procedure below. M3 keeps the settings of its
+authors, and M2 only fits a logistic regression on frozen CLIP features;
+Chapter~\ref{ch:results} gives the details of both. Images are scaled
 to $[0,1]$, normalised with the ImageNet channel means and standard
 deviations, and flipped horizontally at random during training. The
 network outputs a single score per image, which is passed through a
@@ -401,11 +545,12 @@ once, with that checkpoint.
 
 \section{Evaluation Protocol}
 We report four measures on the test set:
+\begingroup\keepwithlist
 \begin{itemize}
   \item \textbf{Accuracy:} the fraction of images classified correctly
         when an image is called generated if its probability is at least
         0.5.
-  \item \textbf{ROC-AUC:} the probability that a randomly chosen
+  \item \textbf{\mbox{ROC-AUC}:} the probability that a randomly chosen
         generated image receives a higher score than a randomly chosen
         real image. It does not depend on the 0.5 threshold, so it
         separates how well a detector ranks images from where its
@@ -417,6 +562,7 @@ We report four measures on the test set:
         real images and for each generator, so that a weak generator is
         not hidden by the overall average.
 \end{itemize}
+\endgroup
 Misclassified images are inspected in the error analysis.
 
 \section{Web Application}
@@ -444,6 +590,35 @@ An upload is analysed in two steps:
         between 40\% and 60\% is reported as uncertain, with the side it
         leans to (Section~\ref{sec:unsure}).
 \end{enumerate}
+
+Figure~\ref{fig:flow-web} summarises these two steps.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[flow,node distance=5mm]
+\node[start,text width=5cm] (u) {User uploads an image};
+\node[box,text width=5cm,below=of u] (p) {Read Content Credentials and AI labels in the metadata};
+\node[check,text width=3.3cm,below=of p] (q1) {Usable record?};
+\node[box,text width=5cm,below=of q1] (t) {Cover the image with 16 tiles of $224\times224$ pixels};
+\node[box,text width=5cm,below=of t] (s) {Score each tile with the CLIP-based detector};
+\node[box,text width=5cm,below=of s] (a) {Average the scores and rescale so that the threshold is 50\%};
+\node[check,text width=3.3cm,below=of a] (q2) {Score between 40\% and 60\%?};
+\node[start,text width=5cm,below=of q2] (v) {Above 60\%: AI-generated\\Below 40\%: real photograph};
+\node[start,text width=3.8cm,right=12mm of q1] (y1) {Verdict taken from the record};
+\node[start,text width=3.8cm,right=12mm of q2] (y2) {Uncertain, with the side it leans to};
+\draw[line] (u) -- (p);
+\draw[line] (p) -- (q1);
+\draw[line] (q1) -- node[right] {No} (t);
+\draw[line] (t) -- (s);
+\draw[line] (s) -- (a);
+\draw[line] (a) -- (q2);
+\draw[line] (q2) -- node[right] {No} (v);
+\draw[line] (q1) -- node[above] {Yes} (y1);
+\draw[line] (q2) -- node[above] {Yes} (y2);
+\end{tikzpicture}
+\caption{How the website reaches a verdict.}
+\label{fig:flow-web}
+\end{figure}
 Three further functions support demonstrations. A \emph{WhatsApp
 simulation} re-saves the uploaded file as in E9 and E10 (long side at
 most 1600 pixels, JPEG quality 80, metadata removed), analyses the copy
@@ -465,19 +640,21 @@ repository.
 
 % ==================================================================
 \chapter{Experimental Setup and Results Analysis}
+\label{ch:results}
 
-\section{Setup}
 All experiments run on Google Colab with an NVIDIA T4 GPU, using
 Python, PyTorch, Pillow, NumPy and pandas. Data and results are stored
 on Google Drive.
 
-\section{Pilot Study: File-Level Shortcuts (E0)}
+\section{Pilot Study: File Properties as Shortcuts (E0)}
 We collected five real photographs (Apple iPhone 17, HEIC) and five
 images generated with ChatGPT (PNG). Table~\ref{tab:pilot} shows that
 the two classes differ on every file-level property.
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
+\caption{File properties of the pilot dataset.}
+\label{tab:pilot}
 \small
 \begin{tabular}{lll}
 \toprule
@@ -490,15 +667,13 @@ EXIF tags & 11 & 0\\
 Embedded colour profile & Yes & No\\
 \bottomrule
 \end{tabular}
-\caption{File properties of the pilot dataset.}
-\label{tab:pilot}
 \end{table}
 
 A \emph{shortcut rule} labels an image as AI-generated from one file
 property, without reading any pixel values. Accuracy is the fraction
 of images labelled correctly.
 
-\section{Normalisation (E0b)}
+\subsection*{Normalisation (E0b)}
 Each image was rotated upright using its EXIF orientation, converted to
 RGB, centre-cropped to $512\times512$ pixels, rebuilt from its raw pixel
 array and saved as PNG. A first attempt without the rebuilding step
@@ -506,8 +681,10 @@ leaked the iPhone colour profile into all real images, which created a
 new shortcut. Table~\ref{tab:shortcuts} compares the rules before and
 after normalisation.
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
+\caption{Accuracy of file-level shortcut rules on the pilot set.}
+\label{tab:shortcuts}
 \small
 \begin{tabular}{lcc}
 \toprule
@@ -520,11 +697,9 @@ No EXIF tags & 100\% & 50\%\\
 No embedded information & 100\% & 50\%\\
 \bottomrule
 \end{tabular}
-\caption{Accuracy of file-level shortcut rules on the pilot set.}
-\label{tab:shortcuts}
 \end{table}
 
-\begin{figure}[h]
+\begin{figure}[htbp]
 \centering
 \IfFileExists{figures/02_clean_images.png}{%
   \includegraphics[width=\textwidth]{figures/02_clean_images.png}}{%
@@ -544,26 +719,26 @@ compression, while AI pixels did not.
 E1 trains each detector on all six generators and tests it on the
 held-out test set of the same generators.
 
-\subsection*{M1: fine-tuned ResNet-50}
-On the test set, M1 reached an accuracy of 96.5\%, a ROC-AUC of 0.994
+\subsection*{M1: fine-tuned \mbox{ResNet-50}}
+On the test set, M1 reached an accuracy of 96.5\%, a \mbox{ROC-AUC} of 0.994
 and an AP of 0.994 (Table~\ref{tab:e1}). Training took about 71 seconds
 per epoch on a T4 GPU.
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
+\caption{E1: test results on the six training generators.}
+\label{tab:e1}
 \small
 \begin{tabular}{lcccc}
 \toprule
-\textbf{Method} & \textbf{Accuracy} & \textbf{ROC-AUC} & \textbf{AP} & \textbf{Test loss}\\
+\textbf{Method} & \textbf{Accuracy} & \textbf{\mbox{ROC-AUC}} & \textbf{AP} & \textbf{Test loss}\\
 \midrule
-M1 (ResNet-50) & 0.965 & 0.994 & 0.994 & 0.104\\
+M1 (\mbox{ResNet-50}) & 0.965 & 0.994 & 0.994 & 0.104\\
 M2 (CLIP + logistic regression) & 0.975 & 0.997 & 0.996 & 0.069\\
 M3 (NPR) & 0.966 & 0.994 & 0.992 & 0.091\\
 M4 (mean of M2 and M3) & 0.988 & 0.999 & -- & --\\
 \bottomrule
 \end{tabular}
-\caption{E1: test results on the six training generators.}
-\label{tab:e1}
 \end{table}
 
 Accuracy differs between sources. Real images were classified correctly
@@ -571,8 +746,10 @@ Accuracy differs between sources. Real images were classified correctly
 were the easiest to detect, while ADM (91.6\%) and Midjourney (93.6\%)
 were the hardest (Table~\ref{tab:e1-source}).
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
+\caption{E1: per-source test accuracy (for Real, images correctly called real; for generators, images correctly called generated).}
+\label{tab:e1-source}
 \small
 \begin{tabular}{lccccccc}
 \toprule
@@ -583,11 +760,9 @@ M2 & 0.978 & 0.944 & 0.992 & 0.978 & 0.978 & 0.974 & 0.968\\
 M3 & 0.944 & 0.976 & 1.000 & 0.988 & 0.988 & 0.990 & 0.980\\
 \bottomrule
 \end{tabular}
-\caption{E1: per-source test accuracy (for Real, images correctly called real; for generators, images correctly called generated).}
-\label{tab:e1-source}
 \end{table}
 
-\begin{figure}[h]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{figures/m1_resnet50_curves.png}
 \caption[M1 training curves]{M1 training curves. Training loss keeps falling while validation loss stays near 0.13, a sign of over-fitting after the first epoch.}
@@ -610,7 +785,7 @@ $\{0.01, 0.1, 1, 10, 100\}$ by validation loss. The best value was
 $C = 100$, although $C = 10$ was almost as good (validation loss 0.082
 against 0.081). The trained classifier has only 769 parameters.
 
-M2 reached a test accuracy of 97.5\%, a ROC-AUC of 0.997 and an AP of
+M2 reached a test accuracy of 97.5\%, a \mbox{ROC-AUC} of 0.997 and an AP of
 0.996, slightly above M1 on every measure (Table~\ref{tab:e1}). It was
 also more even across sources: its lowest per-source accuracy was 94.4\%
 (ADM), against 91.6\% for M1, and its accuracy on Midjourney images rose
@@ -628,14 +803,14 @@ its training and validation losses fell together for most of training
 (Figure~\ref{fig:m3-curves}). Validation loss was lowest at epoch 8
 (0.130), and that checkpoint was used for testing.
 
-\begin{figure}[h]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{figures/m3_npr_curves.png}
 \caption[M3 training curves]{M3 training curves. Training and validation loss decrease together until about epoch 8.}
 \label{fig:m3-curves}
 \end{figure}
 
-M3 reached a test accuracy of 96.6\%, a ROC-AUC of 0.994 and an AP of
+M3 reached a test accuracy of 96.6\%, a \mbox{ROC-AUC} of 0.994 and an AP of
 0.992, close to M1 overall. Its errors, however, are distributed
 differently. M3 detected every generator with at least 97.6\%
 accuracy, including ADM, the hardest generator for M1 and M2, and it
@@ -647,7 +822,7 @@ images but also more likely to raise false alarms on real ones.
 
 \subsection*{Comparison}
 On generators seen during training, all three detectors exceed 96\%
-accuracy and a ROC-AUC of 0.99, so this setting does not separate them
+accuracy and a \mbox{ROC-AUC} of 0.99, so this setting does not separate them
 strongly. M2 is best overall and the most balanced; M3 is the most
 sensitive to generated images but has the highest false-alarm rate on
 real photographs; M1 lies between them. ADM is the hardest generator for
@@ -655,12 +830,17 @@ M1 and M2 but not for M3. The more informative comparison is on
 generators the detectors have not seen, which E2 and E6 address.
 
 M4, the average of the M2 and M3 scores, reached 98.8\% accuracy and a
-ROC-AUC of 0.999, the best result in E1, although it required no
+\mbox{ROC-AUC} of 0.999, the best result in E1, although it required no
 training. Real-image accuracy rose to 98.1\% and the detection rate on
 generated images to 99.5\%: the two methods make different mistakes,
 so averaging their scores corrects many of them.
 
 \section{Generalisation to Unseen Generators (E2)}
+The detectors in E1 were tested only on generators they had seen during
+training, so those scores say little about a new generator. E2 measures
+how well each detector finds images from generators that were absent
+from training.
+
 In E2 each detector was trained and validated only on SD15 images and an
 equal number of real images (3{,}400 training and 600 validation
 images), and then tested on the full test set. SD15 is therefore the only
@@ -674,11 +854,13 @@ validation set ($C = 100$).
 
 For each generator we report two measures: the detection rate (the
 fraction of its images labelled generated at the 0.5 threshold) and the
-ROC-AUC between real test images and that generator's images, which does
+\mbox{ROC-AUC} between real test images and that generator's images, which does
 not depend on the threshold.
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
+\caption[E2: detectors trained on SD15 only]{E2: detectors trained on SD15 only. Correct rate is the fraction of real images labelled real, or of a generator's images labelled generated.}
+\label{tab:e2}
 \small
 \begin{tabular}{lccccccc|c}
 \toprule
@@ -690,27 +872,25 @@ M1 & 97.6 & 97.8 & 22.0 & 61.4 & 76.8 & 28.0 & 84.6 & 54.6\\
 M2 & 98.1 & 97.6 & 65.4 & 75.8 & 95.0 & 72.4 & 92.0 & \textbf{80.1}\\
 M3 & 96.1 & 96.4 & 39.8 & 69.6 & 65.2 & 36.4 & 87.0 & 59.6\\
 \midrule
-\multicolumn{9}{l}{\emph{ROC-AUC (real vs generator)}}\\
+\multicolumn{9}{l}{\emph{\mbox{ROC-AUC} (real vs generator)}}\\
 M1 & -- & 0.997 & 0.824 & 0.956 & 0.972 & 0.848 & 0.983 & 0.917\\
 M2 & -- & 0.997 & 0.964 & 0.981 & 0.994 & 0.974 & 0.993 & \textbf{0.981}\\
 M3 & -- & 0.991 & 0.897 & 0.958 & 0.934 & 0.870 & 0.977 & 0.927\\
 \bottomrule
 \end{tabular}
-\caption[E2: detectors trained on SD15 only]{E2: detectors trained on SD15 only. Correct rate is the fraction of real images labelled real, or of a generator's images labelled generated.}
-\label{tab:e2}
 \end{table}
 
-\begin{figure}[h]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{figures/e2_detection.png}
 \caption{E2: correct rate per source for detectors trained on SD15 only.}
 \label{fig:e2-detection}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=0.9\textwidth]{figures/e2_auc.png}
-\caption{E2: ROC-AUC between real images and each generator.}
+\caption{E2: \mbox{ROC-AUC} between real images and each generator.}
 \label{fig:e2-auc}
 \end{figure}
 
@@ -725,14 +905,14 @@ and~\ref{fig:e2-auc} can be summarised in four points.
         59.6\% for M3.
   \item \textbf{M2 (CLIP) generalised best by a wide margin.} Its mean
         detection rate on unseen generators was 80.1\% and its mean
-        ROC-AUC 0.981, against 0.917 for M1 and 0.927 for M3. This agrees
+        \mbox{ROC-AUC} 0.981, against 0.917 for M1 and 0.927 for M3. This agrees
         with the claim of Ojha \emph{et al.}~\cite{ojha2023universal} that
         a frozen general-purpose representation generalises better than
         a network fine-tuned on one generator. M2 was best on every unseen
         generator.
   \item \textbf{Errors on unseen generators are mainly threshold errors.}
-        For M1, ADM images had a ROC-AUC of 0.824 but only 22\% were
-        detected; for GLIDE the ROC-AUC was 0.956 but the detection rate
+        For M1, ADM images had a \mbox{ROC-AUC} of 0.824 but only 22\% were
+        detected; for GLIDE the \mbox{ROC-AUC} was 0.956 but the detection rate
         61.4\%. The detectors still scored most unseen generated images
         higher than real images, but below the 0.5 threshold learned on
         SD15. The real-image accuracy stayed high, so nearly all errors
@@ -750,6 +930,11 @@ M3 also showed unstable validation loss when trained on the smaller
 SD15-only set (between 0.15 and 0.54 across epochs), and its best
 checkpoint came from epoch 18.
 
+E2 therefore shows that a high score on seen generators, as in E1, does
+not predict performance on new ones. All three detectors lost detection
+rate on unseen generators, and the frozen CLIP features of M2 lost the
+least. E6 repeats this test on generators released in 2024--2026.
+
 \section{Robustness to Image Processing (E3)}
 \label{sec:e3}
 Images shared online are rarely the original files. E3 tests the E1
@@ -762,8 +947,10 @@ JPEG compression at quality 95, 85, 75, 65 and 50; resizing to 90\%,
 processing. The unprocessed results reproduce E1 exactly (M1 0.965, M2
 0.975, M3 0.966), and M4 is included.
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
+\caption{E3: selected processing settings (all settings are shown in Figures~\ref{fig:e3-errors} and~\ref{fig:e3-auc}).}
+\label{tab:e3}
 \small
 \begin{tabular}{lcccccc}
 \toprule
@@ -775,33 +962,30 @@ M2 & 0.975 & \textbf{0.896} & 0.822 & 0.713 & 0.527 & 0.649\\
 M3 & 0.966 & 0.601 & 0.685 & 0.737 & 0.517 & 0.705\\
 M4 & \textbf{0.988} & 0.855 & \textbf{0.832} & 0.728 & 0.507 & 0.673\\
 \midrule
-\multicolumn{7}{l}{\emph{ROC-AUC}}\\
+\multicolumn{7}{l}{\emph{\mbox{ROC-AUC}}}\\
 M1 & 0.994 & 0.952 & \textbf{0.913} & 0.968 & \textbf{0.853} & 0.940\\
 M2 & 0.997 & 0.965 & 0.904 & 0.948 & 0.816 & 0.916\\
 M3 & 0.994 & 0.816 & 0.764 & 0.938 & 0.700 & 0.913\\
 M4 & \textbf{0.999} & \textbf{0.967} & 0.902 & \textbf{0.974} & 0.782 & \textbf{0.952}\\
 \bottomrule
 \end{tabular}
-\caption{E3: selected processing settings (all settings are shown in Figures~\ref{fig:e3-errors} and~\ref{fig:e3-auc}).}
-\label{tab:e3}
 \end{table}
 
-\begin{figure}[h]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{figures/e3_errors.png}
 \caption{E3: fraction of real photographs labelled real (top) and of generated images labelled generated (bottom) under increasing processing.}
 \label{fig:e3-errors}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{figures/e3_auc.png}
-\caption{E3: ROC-AUC under increasing processing.}
+\caption{E3: \mbox{ROC-AUC} under increasing processing.}
 \label{fig:e3-auc}
 \end{figure}
 
-Across all settings (Figures~\ref{fig:e3-errors} and~\ref{fig:e3-auc}),
-four patterns appear.
+Table~\ref{tab:e3} gives selected settings. Across all settings (Figures~\ref{fig:e3-errors} and~\ref{fig:e3-auc}), four patterns appear.
 
 \begin{enumerate}
   \item \textbf{Processing makes real photographs look generated.}
@@ -817,7 +1001,7 @@ four patterns appear.
         flagged as fake.
   \item \textbf{M3 (NPR) is the most sensitive to JPEG.} A single
         additional compression at quality 95 reduced M3's real-image
-        accuracy from 94.4\% to 13.0\% and its ROC-AUC to 0.788. NPR
+        accuracy from 94.4\% to 13.0\% and its \mbox{ROC-AUC} to 0.788. NPR
         measures differences between neighbouring pixels, which JPEG
         alters in every $8\times8$ block. For M1, stronger compression
         had the opposite effect: real-image accuracy recovered while the
@@ -825,16 +1009,13 @@ four patterns appear.
         so JPEG pushed its scores towards ``real''. The effect of JPEG
         did not increase steadily with lower quality; quality 95 caused
         more false alarms than quality 85 for every method.
-  \item \textbf{No single method is the most robust.} M1 was the most
-        robust to resizing and strong JPEG in accuracy, M2 had the highest
-        accuracy at JPEG quality 85, and M4
-        had the highest ROC-AUC under blur and moderate resizing. M2,
+  \item \textbf{No single method is the most robust.} M1 was the most robust to resizing in accuracy and the best at JPEG quality 95, 75 and 65, M2 was the best at quality 85 and M4 at quality 50, and M4 had the highest \mbox{ROC-AUC} under blur and moderate resizing. M2,
         which generalised best to unseen generators in E2, was the most
         affected by mild resizing (real-image accuracy 54.8\% at 90\%
         size).
-  \item \textbf{Ranking survives longer than the threshold.} ROC-AUC
+  \item \textbf{Ranking survives longer than the threshold.} \mbox{ROC-AUC}
         fell much more slowly than accuracy; at 75\% size all methods
-        kept a ROC-AUC above 0.93 while their accuracy was 0.71--0.83.
+        kept a \mbox{ROC-AUC} above 0.93 while their accuracy was 0.71--0.83.
         As in E2, the detectors still ranked most generated images above
         real ones, but processing shifted all scores upwards past the
         0.5 threshold.
@@ -858,13 +1039,15 @@ were trained:
   \item \textbf{A1:} the frozen CLIP features of M2 with a seven-class
         logistic regression. The regularisation strength was selected on
         the validation set ($C = 10$).
-  \item \textbf{A2:} ResNet-50 fine-tuned as in M1, with seven outputs,
+  \item \textbf{A2:} \mbox{ResNet-50} fine-tuned as in M1, with seven outputs,
         a softmax and the cross-entropy loss. Validation loss was lowest
         at epoch 3.
 \end{itemize}
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
+\caption[E4: per-class recall (\%), accuracy (\%) and macro-F1 (F1) for seven-way attribution]{E4: per-class recall (\%), accuracy (\%) and macro-F1 (F1) for seven-way attribution. Chance level is 14.3\%.}
+\label{tab:e4}
 \footnotesize
 \setlength{\tabcolsep}{4pt}
 \begin{tabular}{lccccccc|cc}
@@ -875,11 +1058,9 @@ A1 CLIP & \textbf{95.8} & 78.4 & 90.8 & 83.6 & 67.8 & 77.8 & 66.0 & 80.0 & 0.800
 A2 ResNet & 92.2 & \textbf{89.6} & \textbf{95.8} & \textbf{90.8} & \textbf{75.8} & \textbf{90.4} & \textbf{68.4} & \textbf{86.1} & \textbf{0.861}\\
 \bottomrule
 \end{tabular}
-\caption[E4: per-class recall (\%), accuracy (\%) and macro-F1 (F1) for seven-way attribution]{E4: per-class recall (\%), accuracy (\%) and macro-F1 (F1) for seven-way attribution. Chance level is 14.3\%.}
-\label{tab:e4}
 \end{table}
 
-\begin{figure}[h]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{figures/e4_confusion.png}
 \caption[E4: confusion matrices (\% of each true source)]{E4: confusion matrices (\% of each true source). Rows are the true source, columns the predicted source.}
@@ -923,7 +1104,7 @@ real-image average (bottom). The horizontal and vertical lines through
 the centre appear in every source, including real images; they come
 from the image borders rather than from any generator.
 
-\begin{figure}[h]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{figures/05_spectra.png}
 \caption{Average log spectrum of the noise residual per source (top) and difference from real images (bottom; blue = weaker than real, red = stronger).}
@@ -953,15 +1134,17 @@ neighbouring pixels are more alike in generated images. GLIDE has the
 lowest value (3.6 against 9.6 for real images), while SD15 and Wukong are
 closest to real images.
 
-\begin{figure}[h]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{figures/05_npr_examples.png}
 \caption{Image regions ($64\times64$, top) and the magnitude of their NPR residual (bottom).}
 \label{fig:npr}
 \end{figure}
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
+\caption{Mean absolute NPR residual per source (pixel units, 500 images each).}
+\label{tab:npr}
 \small
 \begin{tabular}{lccccccc}
 \toprule
@@ -970,8 +1153,6 @@ closest to real images.
 Mean $|$NPR$|$ & 9.63 & 5.79 & 3.60 & 5.05 & 8.55 & 7.15 & 9.03\\
 \bottomrule
 \end{tabular}
-\caption{Mean absolute NPR residual per source (pixel units, 500 images each).}
-\label{tab:npr}
 \end{table}
 
 \section{Effect of De-biasing (E5)}
@@ -983,9 +1164,9 @@ cropped but not JPEG-compressed. Everything else is identical, including
 the selected images, the crop positions and the splits; the real images
 are the same pixel arrays in both copies. On the 3{,}000 generated test
 images, the JPEG step changed pixel values by 2.03 levels out of 255 on
-average, a difference that is not visible to a human viewer.
+average, a difference that is not visible to a human viewer (Figure~\ref{fig:e5-difference}).
 
-\begin{figure}[h]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{figures/e5_jpeg_difference.png}
 \caption{A $64\times64$ patch of an SD15 test image without (left) and with (centre) the JPEG step. The amplified difference (right) is concentrated along edges and fine detail, where JPEG discards high-frequency information.}
@@ -999,12 +1180,14 @@ which was trained on the cleaned data. The cleaned--cleaned result
 reproduces E1 exactly (96.5\%), which confirms that both runs used the
 same test images.
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
+\caption{E5: M1 trained on uncleaned or cleaned data, tested on both versions of the test set.}
+\label{tab:e5}
 \small
 \begin{tabular}{llccc}
 \toprule
-\textbf{Trained on} & \textbf{Tested on} & \textbf{Accuracy} & \textbf{ROC-AUC} & \textbf{AP}\\
+\textbf{Trained on} & \textbf{Tested on} & \textbf{Accuracy} & \textbf{\mbox{ROC-AUC}} & \textbf{AP}\\
 \midrule
 Uncleaned & Uncleaned & 0.988 & 0.999 & 0.999\\
 Uncleaned & Cleaned   & 0.789 & 0.936 & 0.942\\
@@ -1012,12 +1195,12 @@ Cleaned (E1) & Uncleaned & 0.870 & 0.969 & 0.968\\
 Cleaned (E1) & Cleaned   & 0.965 & 0.994 & 0.994\\
 \bottomrule
 \end{tabular}
-\caption{E5: M1 trained on uncleaned or cleaned data, tested on both versions of the test set.}
-\label{tab:e5}
 \end{table}
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
+\caption{E5: correct rate (\%) per source.}
+\label{tab:e5-source}
 \small
 \setlength{\tabcolsep}{4pt}
 \begin{tabular}{llccccccc}
@@ -1030,11 +1213,9 @@ Cleaned   & Uncleaned & 97.2 & 51.2 & 97.2 & 93.6 & 85.2 & 68.8 & 65.0\\
 Cleaned   & Cleaned   & 97.2 & 91.6 & 99.6 & 93.6 & 98.2 & 97.0 & 95.4\\
 \bottomrule
 \end{tabular}
-\caption{E5: correct rate (\%) per source.}
-\label{tab:e5-source}
 \end{table}
 
-\begin{figure}[h]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{figures/e5_shortcut.png}
 \caption[E5: overall accuracy for both models on both test sets (left) and per-source correct rate on the cleaned test set (right)]{E5: overall accuracy for both models on both test sets (left) and per-source correct rate on the cleaned test set (right). The dashed line marks 50\%.}
@@ -1055,7 +1236,7 @@ generator, to between 41.8\% (ADM) and 71.6\% (GLIDE): compressing a
 generated image was enough to make it look real. In effect the model had
 learned that JPEG traces mean ``real'', as Grommelt \emph{et
 al.}~\cite{grommelt2024fake} found on the full GenImage dataset. The
-shortcut was not all it learned, however. Its ROC-AUC on the cleaned test
+shortcut was not all it learned, however. Its \mbox{ROC-AUC} on the cleaned test
 set remained 0.936, well above chance, so it had also picked up genuine
 generator traces; the shortcut mainly pushed their scores below the
 threshold.
@@ -1065,9 +1246,9 @@ test set (96.5\% to 87.0\%), mostly on ADM (51.2\%), Wukong (65.0\%) and
 VQDM (68.8\%). Every generated image it saw during training had been
 JPEG-compressed, so uncompressed generated images were outside its
 training distribution. A mismatch in processing therefore hurts in
-both directions, which motivates the robustness tests in E3.
+both directions, as the robustness tests in E3 also showed.
 
-\section{Current Generators and Real-World Sharing (E6)}
+\section[Newer Generators and WhatsApp Sharing (E6)]{\scalebox{0.95}{Newer Generators and WhatsApp Sharing (E6)}}
 \label{sec:e6}
 \subsection*{Generators released in 2024--2026}
 E6 tests the E1 detectors, without retraining, on generators that are
@@ -1090,8 +1271,10 @@ photographs are about $500\times375$ pixels at quality 96. We recorded
 the format and estimated JPEG quality of every image
 (Table~\ref{tab:e6}).
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
+\caption{E6: correct rate (\%) on OpenFake per source. ``Released'' is the earliest date in OpenFake's metadata for that generator; PNG is the share of PNG files.}
+\label{tab:e6}
 \scriptsize
 \begin{tabular}{lrrr|cccc}
 \toprule
@@ -1120,21 +1303,19 @@ Lumina & unknown & 110 & 100\% & 78.2 & 76.4 & 59.1 & 65.5\\
 \midrule
 \multicolumn{4}{l}{All generated images: detected (\%)} & 54.6 & 68.7 & 57.0 & 63.3\\
 \multicolumn{4}{l}{All real images: called real (\%)} & 79.5 & 60.7 & 71.0 & 64.7\\
-\multicolumn{4}{l}{ROC-AUC, all images} & 0.751 & 0.720 & 0.718 & 0.738\\
+\multicolumn{4}{l}{\mbox{ROC-AUC}, all images} & 0.751 & 0.720 & 0.718 & 0.738\\
 \bottomrule
 \end{tabular}
-\caption{E6: correct rate (\%) on OpenFake per source. ``Released'' is the earliest date in OpenFake's metadata for that generator; PNG is the share of PNG files.}
-\label{tab:e6}
 \end{table}
 
-\begin{figure}[h]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{figures/e6_then_now.png}
 \caption{E6: the same detectors on the GenImage test set (E1) and on OpenFake.}
 \label{fig:e6-then-now}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{figures/e6_openfake.png}
 \caption{E6: correct rate per OpenFake source, generators ordered by release date.}
@@ -1146,12 +1327,12 @@ Figures~\ref{fig:e6-then-now} and~\ref{fig:e6-sources}.
 
 \begin{enumerate}
   \item \textbf{Detectors trained on older generators fail on current
-        ones.} ROC-AUC fell from 0.994--0.999 on GenImage to 0.718--0.751
+        ones.} \mbox{ROC-AUC} fell from 0.994--0.999 on GenImage to 0.718--0.751
         on OpenFake, and the detection rate on generated images from
-        96--100\% to 55--69\%. No method stayed above a ROC-AUC of 0.76.
+        96--100\% to 55--69\%. No method stayed above a \mbox{ROC-AUC} of 0.76.
   \item \textbf{The two ChatGPT generators are among the hardest.} GPT
         Image 1.5 was detected at 25.5--49.0\% and GPT Image 2 at
-        13.5--34.2\%, with ROC-AUC between 0.49 and 0.63, close to
+        13.5--34.2\%, with \mbox{ROC-AUC} between 0.49 and 0.63, close to
         chance. Ideogram 2.0, Seedream 5.0 and, for M1 and M3, Recraft v3
         were similarly hard. Frames from video generators (Veo 3, Wan
         2.5) and Z-Image Turbo were detected at 80--99\%.
@@ -1159,7 +1340,7 @@ Figures~\ref{fig:e6-then-now} and~\ref{fig:e6-sources}.
         2026) was detected at 90.0\% by M3, while Recraft v3 (October
         2024) was detected at 0.5\% by the same method. Difficulty
         depends on the generator rather than on its release date. M3 was
-        the only method to detect Flux.2 Klein reliably (ROC-AUC 0.899
+        the only method to detect Flux.2 Klein reliably (\mbox{ROC-AUC} 0.899
         against 0.623 for M1).
   \item \textbf{One real-image source causes many false alarms.} 94--99\%
         of ImageNet photographs were called real, but only 24--63\% of
@@ -1191,9 +1372,6 @@ photographs and 10 images from each of GPT Image 1.5, GPT Image 2,
 Midjourney 7, Nano Banana Pro and Flux.2 Klein. They were sent through
 WhatsApp Desktop as ordinary photos at standard quality, and the
 received copies were collected from the application's media folder.
-WhatsApp renamed every file, so each received image was matched to its
-original by comparing $32\times32$ greyscale thumbnails with an optimal
-one-to-one assignment; all 100 were matched.
 
 WhatsApp converted every image to JPEG at an estimated quality of 80 and
 reduced images larger than 1600 pixels to 1600 pixels on the longer
@@ -1201,19 +1379,21 @@ side, which affected the DOCCI photographs and some Nano Banana Pro
 images. Both versions of each image were cropped and scored in the same
 way (Figure~\ref{fig:e6-whatsapp}).
 
-\begin{figure}[h]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{figures/e6_whatsapp.png}
 \caption{E6: the same 100 images (50 real, 50 generated) before and after sharing through WhatsApp.}
 \label{fig:e6-whatsapp}
 \end{figure}
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
+\caption{E6: detector results on the 100 images before and after WhatsApp.}
+\label{tab:e6-whatsapp}
 \small
 \begin{tabular}{lcc|cc|cc}
 \toprule
- & \multicolumn{2}{c|}{\textbf{Real called real}} & \multicolumn{2}{c|}{\textbf{AI detected}} & \multicolumn{2}{c}{\textbf{ROC-AUC}}\\
+ & \multicolumn{2}{c|}{\textbf{Real called real}} & \multicolumn{2}{c|}{\textbf{AI detected}} & \multicolumn{2}{c}{\textbf{\mbox{ROC-AUC}}}\\
  & before & after & before & after & before & after\\
 \midrule
 M1 & 90\% & 76\% & 36\% & 34\% & 0.680 & 0.530\\
@@ -1222,12 +1402,10 @@ M3 & 80\% & 60\% & 46\% & 34\% & 0.692 & 0.459\\
 M4 & 68\% & 56\% & 60\% & 48\% & 0.701 & 0.533\\
 \bottomrule
 \end{tabular}
-\caption{E6: detector results on the 100 images before and after WhatsApp.}
-\label{tab:e6-whatsapp}
 \end{table}
 
 Sharing made every detector worse on both classes
-(Table~\ref{tab:e6-whatsapp}). ROC-AUC fell from 0.67--0.70 to
+(Table~\ref{tab:e6-whatsapp}). \mbox{ROC-AUC} fell from 0.67--0.70 to
 0.46--0.58, close to chance; M3, which depends on neighbouring-pixel
 differences, fell below 0.5. More real photographs were labelled
 generated (for example 80\% to 60\% called real by M3), and fewer
@@ -1261,8 +1439,10 @@ ImageNet), so E7 still measures generalisation to unseen generators. The
 new detectors were evaluated on exactly the images of E6, on the 100
 WhatsApp pairs and on our GenImage test set.
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
+\caption[E7: real images called real (\%), generated images detected (\%) and \mbox{ROC-AUC} for detectors trained on GenImage or on OpenFake]{E7: real images called real (\%), generated images detected (\%) and \mbox{ROC-AUC} for detectors trained on GenImage or on OpenFake. The WhatsApp rows use 50 images per class.}
+\label{tab:e7}
 \small
 \setlength{\tabcolsep}{4pt}
 \begin{tabular}{llccc|ccc}
@@ -1278,19 +1458,17 @@ WhatsApp (after) & M1 & 76 & 34 & 0.530 & 68 & 62 & \textbf{0.669}\\
  & M2 & 54 & 50 & 0.580 & 86 & 68 & \textbf{0.853}\\
 \bottomrule
 \end{tabular}
-\caption[E7: real images called real (\%), generated images detected (\%) and ROC-AUC for detectors trained on GenImage or on OpenFake]{E7: real images called real (\%), generated images detected (\%) and ROC-AUC for detectors trained on GenImage or on OpenFake. The WhatsApp rows use 50 images per class.}
-\label{tab:e7}
 \end{table}
 
-\begin{figure}[h]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{figures/e7_then_now.png}
-\caption{E7: ROC-AUC of detectors trained on GenImage (grey) or on OpenFake (blue).}
+\caption{E7: \mbox{ROC-AUC} of detectors trained on GenImage (grey) or on OpenFake (blue).}
 \label{fig:e7}
 \end{figure}
 
 Recent training data closed most of the gap (Table~\ref{tab:e7},
-Figure~\ref{fig:e7}). On the OpenFake test set, ROC-AUC rose from 0.751
+Figure~\ref{fig:e7}). On the OpenFake test set, \mbox{ROC-AUC} rose from 0.751
 to 0.877 for M1 and from 0.720 to 0.945 for M2, although the test
 generators were still unseen and the training set was five times smaller
 than our GenImage training set. The hardest generators of E6 improved
@@ -1300,20 +1478,32 @@ Midjourney~7 from 72.0\% to 86.0\%, and 90.0\% of DOCCI photographs were
 now called real, against 23.7\% before. As in E2, the frozen CLIP
 features gained most and became the best detector.
 
-The gain came at a price on the old generators. On GenImage, ROC-AUC fell
-to 0.770 (M1) and 0.900 (M2), and the new M1 called only 50.4\% of
-GenImage real images and 47.0\% of ImageNet test photographs real: real
-photographs unlike its LAION and Pexels training photographs were often
-labelled generated. A detector reflects the real and generated images it
-was trained on, in both directions.
+The fall on GenImage has a different explanation. \mbox{ROC-AUC} there went
+from 0.994 to 0.770 for M1 and from 0.997 to 0.900 for M2, but the earlier
+values were measured on generators seen during training, so they are not
+a fair baseline. For the new detectors both test sets are unseen, and the
+fair comparison is 0.770 on GenImage against 0.877 on OpenFake for M1, and
+0.900 against 0.945 for M2.
+
+The remaining gap for M1 comes mainly from real images rather than from
+the older generators. It still detected 85.0\% of GenImage generated
+images, but called only 50.4\% of GenImage real images and 47.0\% of
+ImageNet test photographs real: real photographs unlike its LAION and
+Pexels training photographs were often labelled generated. M2 lost about
+equally on both classes (81.7\% real, 81.8\% generated). One possible
+reason for the real-image errors is that web images in LAION and Pexels
+have already been resized and compressed, so the detector may have taken
+that processing history as a sign of a real photograph; we did not test
+this. A detector reflects the real and generated images it was trained
+on, in both directions.
 
 Robustness to sharing improved but was not solved. After WhatsApp the new
-M2 kept a ROC-AUC of 0.853, against 0.580 for the GenImage-trained M2,
+M2 kept a \mbox{ROC-AUC} of 0.853, against 0.580 for the GenImage-trained M2,
 possibly because web images from LAION already carry resizing and
 compression. The new M1 reached only 0.669, and GPT Image~2 and
 Seedream~5.0 remained the hardest generators (46--62\% detected).
 
-\section{More Data, Augmentation and Full-Image Analysis (E8)}
+\section{Augmentation and Full-Image Analysis (E8)}
 \label{sec:e8}
 E8 repeats E7 with five complete OpenFake training files (17{,}780
 balanced training images from 74 generators; 3{,}446 validation
@@ -1334,8 +1524,10 @@ the image is covered by an evenly spaced grid of up to $3\times3$ tiles
 of $224\times224$ pixels at its original resolution, and the tile scores
 are averaged. Nothing is resized, so pixel traces are preserved.
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
+\caption{E8: \mbox{ROC-AUC} of detectors trained on OpenFake data.}
+\label{tab:e8}
 \small
 \setlength{\tabcolsep}{4pt}
 \begin{tabular}{llccc}
@@ -1348,12 +1540,12 @@ GenImage (centre crop) & M1 & 0.770 & \textbf{0.917} & 0.777\\
  & M2 & \textbf{0.900} & 0.881 & 0.849\\
 \bottomrule
 \end{tabular}
-\caption{E8: ROC-AUC of detectors trained on OpenFake data.}
-\label{tab:e8}
 \end{table}
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
+\caption[E8 (full data, no augmentation): the 100 WhatsApp images analysed with one centre crop or with the full-image tile grid]{E8 (full data, no augmentation): the 100 WhatsApp images analysed with one centre crop or with the full-image tile grid. Real: real images called real (\%); AI: generated images detected (\%), both at the threshold 0.5.}
+\label{tab:e8-whatsapp}
 \small
 \setlength{\tabcolsep}{4pt}
 \begin{tabular}{ll|ccc|ccc}
@@ -1367,20 +1559,18 @@ After WhatsApp & M1 & 0.707 & 86 & 50 & 0.753 & 98 & 32\\
  & M2 & 0.846 & 80 & 72 & \textbf{0.933} & 96 & 32\\
 \bottomrule
 \end{tabular}
-\caption[E8 (full data, no augmentation): the 100 WhatsApp images analysed with one centre crop or with the full-image tile grid]{E8 (full data, no augmentation): the 100 WhatsApp images analysed with one centre crop or with the full-image tile grid. Real: real images called real (\%); AI: generated images detected (\%), both at the threshold 0.5.}
-\label{tab:e8-whatsapp}
 \end{table}
 
-\begin{figure}[h]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{figures/e8_robust.png}
-\caption{E8: ROC-AUC of the E7 detectors and of the two E8 variants.}
+\caption{E8: \mbox{ROC-AUC} of the E7 detectors and of the two E8 variants.}
 \label{fig:e8}
 \end{figure}
 
 More training data helped (Table~\ref{tab:e8}, Figure~\ref{fig:e8}),
 most of all for M1 on old generators: with 4.5 times more images, its
-ROC-AUC on GenImage rose from 0.770 to 0.917 and its real-image accuracy
+\mbox{ROC-AUC} on GenImage rose from 0.770 to 0.917 and its real-image accuracy
 there from 50.4\% to 89.2\%. M2 improved slightly on OpenFake, from
 0.945 to 0.957, the best result of the project on unseen 2024--2026
 generators.
@@ -1394,7 +1584,7 @@ reason is that our augmentation was stronger than the processing applied
 by WhatsApp (quality about 80, at most a reduction to 1600 pixels); we
 did not test other strengths.
 
-Full-image analysis raised ROC-AUC in all eight comparisons (two
+Full-image analysis raised \mbox{ROC-AUC} in all eight comparisons (two
 detectors, two training variants, before and after WhatsApp), by 0.03 to
 0.09; on the WhatsApp images (Table~\ref{tab:e8-whatsapp}) it
 rose for M2 after sharing from 0.846 to 0.933. At the fixed threshold of 0.5,
@@ -1418,7 +1608,7 @@ and is signed with an X.509 certificate. The manifest of each file
 contained:
 \begin{itemize}
   \item the action \texttt{c2pa.created} with the software agent
-        ``ChatGPT'' (version ``gpt-image'') and the IPTC digital source
+        ``ChatGPT'' (version ``\mbox{gpt-image}'') and the IPTC digital source
         type \texttt{trainedAlgorithmicMedia}, the standard code for media
         created by a trained model;
   \item the signer ``OpenAI OpCo, LLC'' and a signing time;
@@ -1446,7 +1636,7 @@ can sign a false claim with a self-made certificate.
 
 \section{A Detector for Current Generators (E9)}
 \label{sec:e9}
-E6 to E8 trained only on OpenFake's training split, which leaves out the
+E7 and E8 trained only on OpenFake's training split, which leaves out the
 newest generators so that generalisation to unseen generators can be
 measured. For the website the goal is different: it should work as well
 as possible on images that people upload today. E9 therefore trains a
@@ -1455,8 +1645,7 @@ files 4 to 12, which no earlier experiment used, contribute 62{,}145
 images (30{,}386 real from DOCCI and ImageNet, and 31{,}759 generated,
 including 3{,}845 GPT Image~1.5, 319 GPT Image~2, 284 Nano Banana Pro and
 190 Aurora images), in addition to the E8 training data. Test file 3 is
-used to calibrate the threshold and files 0 to 2, the images of E6, for
-testing.
+used to calibrate the threshold and files 0 to 2, the files used in E6, for testing.
 
 Each training image is prepared the way the website sees it: up to four
 tiles from the website's $3\times3$ grid at original resolution, once as
@@ -1468,8 +1657,10 @@ balanced class weights, fitted on 445{,}112 tiles.
 The test generators are now \emph{seen} during training, so E9 measures
 the detection of known generators on new images, not generalisation.
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
+\caption{E9: full-image \mbox{ROC-AUC}, real images called real (\%) and generated images detected (\%), each detector at its own calibrated threshold.}
+\label{tab:e9}
 \small
 \setlength{\tabcolsep}{4pt}
 \begin{tabular}{ll|ccc|ccc}
@@ -1485,8 +1676,6 @@ E6 WhatsApp images & E8 & 0.953 & 88 & 92 & 0.933 & 94 & 58\\
  & E9 & \textbf{0.998} & 98 & 96 & \textbf{0.997} & 98 & 96\\
 \bottomrule
 \end{tabular}
-\caption{E9: full-image ROC-AUC, real images called real (\%) and generated images detected (\%), each detector at its own calibrated threshold.}
-\label{tab:e9}
 \end{table}
 
 On OpenFake, E9 was almost perfect (Table~\ref{tab:e9}). After the
@@ -1503,7 +1692,7 @@ photographs look like; a 24-megapixel phone photograph, with its own
 sharpening and noise reduction, lay outside that range. E10 measures how
 large this problem is and addresses it.
 
-\section{Real-World Photographs and Current Generators (E10)}
+\section{Real Photographs and New Generators (E10)}
 \label{sec:e10}
 E10 adds four public sources that OpenFake does not cover
 (Table~\ref{tab:e10-data}). Phone photographs come from Wikimedia
@@ -1518,8 +1707,10 @@ from a public collection of Gemini~2.5 Flash Image (Nano Banana)
 images~\cite{bitmindnanobanana}. Only CLIP features were kept; no image
 is redistributed.
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
+\caption[E10: new data sources]{E10: new data sources. Commons and Unsplash were split by photographer, so test photographs come from photographers not seen in training.}
+\label{tab:e10-data}
 \small
 \begin{tabular}{lrrrr}
 \toprule
@@ -1527,16 +1718,16 @@ is redistributed.
 \midrule
 Commons, Android phones (47 models) & 1{,}409 & 995 & 150 & 264\\
 Commons, iPhones (10 models) & 300 & 184 & 66 & 50\\
-Unsplash, phones\footnotemark & 858 & 617 & 147 & 94\\
+Unsplash, phones$^{\ast}$ & 858 & 617 & 147 & 94\\
 Unsplash, other cameras & 1{,}500 & 1{,}053 & 222 & 225\\
 ChatGPT (GPT-4o) & 2{,}000 & 1{,}422 & 278 & 300\\
 Gemini (Nano Banana) & 2{,}000 & 1{,}393 & 305 & 302\\
 \bottomrule
 \end{tabular}
-\caption[E10: new data sources]{E10: new data sources. Commons and Unsplash were split by photographer, so test photographs come from photographers not seen in training.}
-\label{tab:e10-data}
+
+\vspace{4pt}
+{\footnotesize $^{\ast}$Including about 35 photographs from Samsung NX system cameras, which our first filter counted as phones.\par}
 \end{table}
-\footnotetext{Including about 35 photographs from Samsung NX system cameras, which our first filter counted as phones.}
 
 The new training tiles (45{,}312) are few next to the more than
 445{,}000 OpenFake tiles, so they were weighted to provide 30\% of the training signal. The
@@ -1544,8 +1735,10 @@ threshold was calibrated on the OpenFake calibration images together with
 the new calibration images. E8, E9 and E10 were then compared on the
 held-out test images of every source.
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
+\caption{E10: correct decisions on held-out test images, each detector at its own calibrated threshold.}
+\label{tab:e10}
 \small
 \setlength{\tabcolsep}{4pt}
 \begin{tabular}{l|ccc|ccc}
@@ -1566,19 +1759,19 @@ Gemini, Nano Banana (302) & \textbf{99.7} & 99.0 & 98.7 & 96.7 & \textbf{99.0} &
 OpenFake generated (1{,}609) & 86.4 & \textbf{96.1} & 93.0 & 76.4 & \textbf{96.0} & 88.6\\
 \bottomrule
 \end{tabular}
-\caption{E10: correct decisions on held-out test images, each detector at its own calibrated threshold.}
-\label{tab:e10}
 \end{table}
 
-\begin{figure}[h]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{figures/e10_real_world.png}
 \caption{E10: correct decisions of E8, E9 and E10 per test source, as distributed (top) and after a simulated WhatsApp share (bottom).}
 \label{fig:e10}
 \end{figure}
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
+\caption{E10: Commons phone photographs called real (\%) per brand.}
+\label{tab:e10-brands}
 \small
 \begin{tabular}{lrcc}
 \toprule
@@ -1594,8 +1787,6 @@ Realme & 27 & 81.5 & 100.0\\
 Oppo, Huawei, Infinix & 6 & 100.0 & 100.0\\
 \bottomrule
 \end{tabular}
-\caption{E10: Commons phone photographs called real (\%) per brand.}
-\label{tab:e10-brands}
 \end{table}
 
 The comparison in Tables~\ref{tab:e10} and~\ref{tab:e10-brands} and
@@ -1603,9 +1794,9 @@ Figure~\ref{fig:e10} leads to four observations.
 
 \begin{enumerate}
   \item \textbf{A near-perfect benchmark score hid a real-world failure.}
-        E9 reached a ROC-AUC of 0.999 on OpenFake but called only 44.7\%
+        E9 reached a \mbox{ROC-AUC} of 0.999 on OpenFake but called only 44.7\%
         of the Unsplash phone photographs and 28.0\% of the other camera
-        photographs real. Over all new test sources its ROC-AUC was
+        photographs real. Over all new test sources its \mbox{ROC-AUC} was
         0.921. A detector is only as good as the range of its
         \emph{real} training images, and four photograph collections are
         not enough.
@@ -1613,7 +1804,7 @@ Figure~\ref{fig:e10} leads to four observations.
         the new generators.} E10 called 98--99\% of the phone and camera
         photographs real, for Android phones and iPhones alike, and still
         detected 97.3\% of the GPT-4o and 98.7\% of the Nano Banana
-        images. Its ROC-AUC on the new test sources was 0.998 (0.981
+        images. Its \mbox{ROC-AUC} on the new test sources was 0.998 (0.981
         after the simulated share), and on the E6 WhatsApp images 0.992
         after sharing (96\% of real images called real, 96\% of
         generated images detected).
@@ -1635,7 +1826,7 @@ WhatsApp copy real (AI scores 28\% and 24\%) and gave both ChatGPT PNG
 files scores above the threshold (57\% and 63\%), but the ChatGPT image
 received through WhatsApp was still missed (23\%).
 
-\section{Test on Our Own Images from ChatGPT, Gemini and Grok}
+\section{Test on Our Own Images}
 \label{sec:fresh}
 As a final check we generated new images ourselves in October 2026,
 after all training was finished: 4 with ChatGPT, 8 with Gemini and 4
@@ -1644,11 +1835,13 @@ most of them photorealistic scenes (rooms, people, streets,
 landscapes, an animal) and a few stylised ones. Each image was tested in
 four forms: the original download, a screenshot of it, the original sent
 through WhatsApp, and the screenshot sent through WhatsApp, 62 files in
-total (one Gemini screenshot was not taken). All files were analysed by
+total. All files were analysed by
 the website exactly as a user would upload them.
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
+\caption[Our own generated images called AI-generated by the website (final verdict)]{Our own generated images called AI-generated by the website (final verdict). Both: a screenshot sent through WhatsApp.}
+\label{tab:fresh}
 \small
 \setlength{\tabcolsep}{5pt}
 \begin{tabular}{l|cccc|c}
@@ -1662,10 +1855,9 @@ Grok & 4/4 & 4/4 & 4/4 & 4/4 & 16/16\\
 Total & 16/16 & 12/15 & 13/16 & 12/15 & 53/62\\
 \bottomrule
 \end{tabular}
-\caption[Our own generated images called AI-generated by the website (final verdict)]{Our own generated images called AI-generated by the website (final verdict). Both: a screenshot sent through WhatsApp.}
-\label{tab:fresh}
 \end{table}
 
+\begin{sloppypar}
 Table~\ref{tab:fresh} shows that 53 of the 62 files (85\%) were called
 AI-generated. Every original download was identified, most of them by
 their Content Credentials. All ChatGPT originals carried a trusted
@@ -1678,6 +1870,7 @@ software, but signed with a self-signed certificate marked ``local use
 only'', so the signature was valid while the signer could not be
 verified; the Grok images saved on the phone carried none. Screenshots
 and WhatsApp copies never kept a manifest.
+\end{sloppypar}
 
 Without credentials, the pixel detector caught 50 of the 62 files
 (81\%). All 16 Grok files scored above 83\%, including two
@@ -1692,7 +1885,9 @@ With the 16-tile grid that the website uses by default since the tile
 test of Section~\ref{sec:tiles}, 57 of the 62 files (92\%) were called
 AI-generated: 16/16 originals, 13/15 screenshots, 14/16 WhatsApp copies
 and 14/15 screenshots sent through WhatsApp (ChatGPT 15/16, Gemini 26/30,
-Grok 16/16). All files in this test were generated, so it measures
+Grok 16/16). At this setting the pixel detector alone caught 56 of the 62
+files (90\%); Content Credentials decided 14 originals and added the one
+file it missed, a Gemini mountain lake. All files in this test were generated, so it measures
 detection only; real photographs were tested in E10 and in
 Section~\ref{sec:tiles}.
 
@@ -1709,12 +1904,14 @@ photographs from 14 phone models that were not used for training (from
 Wikimedia Commons), each as downloaded and after a simulated WhatsApp
 share, and two of our own iPhone images.
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
+\caption[Final detector (E10) with different numbers of tiles on 64 generated and 142 real files (\%, threshold calibrated for nine tiles)]{Final detector (E10) with different numbers of tiles on 64 generated and 142 real files (\%, threshold calibrated for nine tiles). CPU time: the detector alone on a laptop. Large images get fewer tiles where the grid does not fit; 36 tiles averaged 30.}
+\label{tab:tiles}
 \small
 \begin{tabular}{lcccc}
 \toprule
-\textbf{Tiles} & \textbf{ROC-AUC} & \textbf{AI detected} & \textbf{Real as real} & \textbf{CPU time}\\
+\textbf{Tiles} & \textbf{\mbox{ROC-AUC}} & \textbf{AI detected} & \textbf{Real as real} & \textbf{CPU time}\\
 \midrule
 1 (centre crop) & 0.984 & 93.8 & 91.5 & --\\
 4 & 0.982 & 75.0 & 97.9 & --\\
@@ -1724,8 +1921,6 @@ share, and two of our own iPhone images.
 36 & \textbf{0.996} & \textbf{90.6} & 97.9 & --\\
 \bottomrule
 \end{tabular}
-\caption[Final detector (E10) with different numbers of tiles on 64 generated and 142 real files (\%, threshold calibrated for nine tiles)]{Final detector (E10) with different numbers of tiles on 64 generated and 142 real files (\%, threshold calibrated for nine tiles). CPU time: the detector alone on a laptop. Large images get fewer tiles where the grid does not fit; 36 tiles averaged 30.}
-\label{tab:tiles}
 \end{table}
 
 Going from 9 to 16 tiles raised the share of generated files detected
@@ -1745,7 +1940,7 @@ the average difference between neighbouring pixels. At the same number
 of false alarms (3 of 142 real files), the mean detected the most
 generated files (96.9\%, against 92.2--95.3\% for the rules based on the
 highest tiles and 81.2--84.4\% for the detail-based rules), and it had
-the highest ROC-AUC together with the log-odds mean and the most AI-like
+the highest \mbox{ROC-AUC} together with the log-odds mean and the most AI-like
 half (0.995--0.996). Rules based on the highest tiles mainly shifted the
 threshold: they detected every generated file but called up to 44\% of
 the real files AI-generated. Plain regions therefore carry useful
@@ -1762,8 +1957,10 @@ decision line was fixed as a round value and not tuned; it was evaluated
 on the same 206 files as the number of tiles, so the result is
 optimistic.
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
+\caption{Decisions of the final detector (16 tiles) with and without the uncertain band of 40--60\%.}
+\label{tab:unsure}
 \small
 \begin{tabular}{lccc}
 \toprule
@@ -1775,8 +1972,6 @@ Real (142), without band & 139 & -- & 3\\
 Real (142), with band & 137 & 4 & 1\\
 \bottomrule
 \end{tabular}
-\caption{Decisions of the final detector (16 tiles) with and without the uncertain band of 40--60\%.}
-\label{tab:unsure}
 \end{table}
 
 With the band, 18 of the 206 files (8.7\%) were reported as uncertain,
@@ -1797,8 +1992,10 @@ features saved for E8 to E10, with at most 40{,}000 training tiles per
 class and balanced class weights; the family of an image is the one with
 the highest average tile probability.
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
+\caption{E11: generated test images attributed to the correct family (\%, nine families; chance 11\%).}
+\label{tab:e11}
 \small
 \begin{tabular}{lrcc}
 \toprule
@@ -1817,13 +2014,11 @@ Other AI & 801 & 45.9 & 48.1\\
 All generated images & 2{,}211 & 67.1 & 71.6\\
 \bottomrule
 \end{tabular}
-\caption{E11: generated test images attributed to the correct family (\%, nine families; chance 11\%).}
-\label{tab:e11}
 \end{table}
 
-\begin{figure}[h]
+\begin{figure}[htbp]
 \centering
-\includegraphics[width=\textwidth]{figures/e11_confusion.png}
+\includegraphics[width=0.9\textwidth]{figures/e11_confusion.png}
 \caption{E11: attribution of generated test images to families (\% of each true family).}
 \label{fig:e11}
 \end{figure}
@@ -1852,15 +2047,14 @@ The detectors of E8 to E11 work on CLIP features, 768 numbers per tile.
 E12 draws these features as a map. Each test image of E10 and E11 is
 represented by the average of its tile features; t-SNE
 \cite{vandermaaten2008tsne} places the images in two dimensions so that
-images with similar features lie close together. We used up to 300
-images per generator family and 600 real photographs (1{,}803 images),
+images with similar features lie close together. We used up to about 300 images per generator family and about 600 real photographs (1{,}803 images),
 as distributed and after the simulated WhatsApp share. Distances between
 distant groups and the size of a group carry little meaning in a t-SNE
 map, so the map is backed by a measure computed on the full features:
 for each image, the share of its 10 nearest neighbours (cosine distance)
 that belong to the same group, which we call \emph{neighbour agreement}.
 
-\begin{figure}[h]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{figures/e12_fingerprint_map.png}
 \caption{E12: CLIP features of 634 real photographs and 1{,}169
@@ -1877,8 +2071,12 @@ fell to 89\% and 85\%, and part of the real photographs moved into the
 region of the generated images, in line with E3 and E6: compression and
 resizing make a photograph resemble a generated image.
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
+\caption[E12: neighbour agreement among generated images (\% of the 10 nearest neighbours from the same family)]{E12: neighbour agreement among generated images (\% of the 10
+nearest neighbours from the same family). Seedream, Ideogram and Recraft
+are counted as Other AI.}
+\label{tab:e12}
 \small
 \begin{tabular}{lrccc}
 \toprule
@@ -1892,13 +2090,9 @@ Flux & 90 & 7.7 & 43.8 & 32.6\\
 Other AI & 314 & 26.9 & 47.5 & 44.3\\
 \bottomrule
 \end{tabular}
-\caption[E12: neighbour agreement among generated images (\% of the 10 nearest neighbours from the same family)]{E12: neighbour agreement among generated images (\% of the 10
-nearest neighbours from the same family). Seedream, Ideogram and Recraft
-are counted as Other AI.}
-\label{tab:e12}
 \end{table}
 
-\begin{figure}[h]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{figures/e12_family_map.png}
 \caption{E12: generated images only; each panel highlights one family.}
@@ -1921,8 +2115,10 @@ limitation shared by all results on these data (E5).
 Table~\ref{tab:errors} collects the cases where the final detector (E10)
 still fails most often, from the experiments above.
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
+\caption{Weak spots of the final detector (E10).}
+\label{tab:errors}
 \small
 \begin{tabular}{p{4.3cm}cp{6.4cm}}
 \toprule
@@ -1937,8 +2133,6 @@ Realme phones, as distributed & 81.5 & strong in-phone processing; only 27 test 
 Gemini outdoor scenes, own test & 3 images & photorealistic landscapes, a street and an animal; originals scored 34--47\%, and most of their copies were also missed\\
 \bottomrule
 \end{tabular}
-\caption{Weak spots of the final detector (E10).}
-\label{tab:errors}
 \end{table}
 
 Across all experiments, four patterns explain most of the errors:
@@ -1959,7 +2153,7 @@ Across all experiments, four patterns explain most of the errors:
         generated images in E3, E6 and E8 and, to a lesser degree, in
         E10.
   \item \textbf{Scores shift before rankings do.} In E2, E3, E6 and E8,
-        ROC-AUC stayed much higher than accuracy: the detectors still
+        \mbox{ROC-AUC} stayed much higher than accuracy: the detectors still
         ranked generated images above real ones, but processing or new
         generators moved all scores across the threshold. Calibrating the
         threshold on data like the deployment data (E8, E9, E10) recovered
@@ -1973,30 +2167,30 @@ Across all experiments, four patterns explain most of the errors:
 \section{Answers to the Research Questions}
 \begin{description}
   \item[RQ1: real versus AI on known generators.] Yes. On de-biased data
-        all three detectors reached 96.5--97.5\% accuracy and a ROC-AUC
+        all three detectors reached 96.5--97.5\% accuracy and a \mbox{ROC-AUC}
         of at least 0.994, and their combination 98.8\% (E1). This holds
         only when the data is fair: trained on the uncorrected benchmark,
         the same network learned that JPEG traces mean ``real'' and lost
         19.9 percentage points on fairly prepared images (E5).
   \item[RQ2: unseen generators.] Only partly. Trained on one generator,
         the detectors caught 55--80\% of five others (E2), and detectors
-        trained on 2021--2023 generators reached a ROC-AUC of only
+        trained on 2021--2023 generators reached a \mbox{ROC-AUC} of only
         0.72--0.75 on 2024--2026 generators; ChatGPT's GPT Image~2 was
         detected 13.5--34.2\% of the time (E6). Frozen CLIP features
         generalised best. Most errors were threshold errors: unseen
         generated images were still ranked above real ones but scored
         below the threshold. Training data from recent generators closed
-        most of the gap (ROC-AUC 0.957, E8).
+        most of the gap (\mbox{ROC-AUC} 0.957, E8).
   \item[RQ3: processing.] Processing is the main practical weakness.
         Resizing and blur made real photographs look generated (at half
         size only 1--6\% were called real, E3), and a single WhatsApp
         share brought every detector close to chance (E6). Recent
         training data, full-image analysis and a calibrated threshold
-        restored a ROC-AUC of 0.93 after WhatsApp (E8), and the final
+        restored a \mbox{ROC-AUC} of 0.93 after WhatsApp (E8), and the final
         detector reached 0.99 (E10), although with the test generators
         seen in training.
   \item[RQ4: attribution.] Within a benchmark, yes: a fine-tuned
-        ResNet-50 named the correct one of seven 2021--2023 sources for
+        \mbox{ResNet-50} named the correct one of seven 2021--2023 sources for
         86.1\% of images (E4), and a CLIP-based model the correct one of
         nine current generator families for 67\% (E11; chance 11\%).
         Each generator also showed a visible, averaged frequency
@@ -2009,10 +2203,9 @@ Across all experiments, four patterns explain most of the errors:
 \end{description}
 
 Two further lessons came from testing on images we made ourselves. A
-benchmark score is not a guarantee: a detector with a ROC-AUC of 0.999
+benchmark score is not a guarantee: a detector with a \mbox{ROC-AUC} of 0.999
 on OpenFake called more than half of one set of phone photographs and
-most camera photographs generated, because all of
-its real training images came from two photo collections; real-world
+most camera photographs generated, because all of its real training images came from four photo collections; real-world
 photographs from 57 phone models fixed this (E10). And pixels are not the
 only evidence: images downloaded from ChatGPT carry signed Content
 Credentials that identify them with certainty, but sharing removes them,
@@ -2056,6 +2249,13 @@ so a pixel detector remains necessary.
 \end{itemize}
 
 \bibliographystyle{acm}
+{\renewcommand{\baselinestretch}{1.15}\selectfont
 \bibliography{references}
+\par}
+
+\clearpage
+\phantomsection
+\addcontentsline{toc}{chapter}{Plagiarism Report}
+\includepdf[pages=-]{figures/plagiarism_report.pdf}
 
 \end{document}
