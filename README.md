@@ -1,6 +1,6 @@
-# Detecting and Attributing AI-Generated Images
+# Digital Media Fingerprinting and Source Identification
 
-A forensic study of AI-generated images: given an image, decide whether a camera took it or a generative model made it, and if a model made it, which one. We treat the generator as a *source* that leaves a statistical fingerprint, in the same way a camera sensor does, and test how well current detectors work on new generators, on processed images and on images shared through WhatsApp.
+Detecting and attributing AI-generated images. A forensic study: given an image, decide whether a camera took it or a generative model made it, and if a model made it, which one. We treat the generator as a *source* that leaves a statistical fingerprint, in the same way a camera sensor does, and test how well current detectors work on new generators, on processed images and on images shared through WhatsApp.
 
 B.Tech VII Semester Minor Project, Department of Computer Science and Engineering, MNNIT Allahabad (2026-27).
 Mentor: Dr. Anuja Dixit.
@@ -47,7 +47,7 @@ The final detector (E10) is M2 trained on current generators and real photograph
 | E10 | E9 plus phone photos from 57 models, ChatGPT and Gemini images | **98%** of phone photos called real; 97% ChatGPT and 99% Gemini images detected |
 | E11 | Attribution to nine current generator families (chance 11%) | 67% on benchmark images; did not transfer to our own app images (5 of 62) |
 | E12 | Map of the CLIP feature space (t-SNE, 10-nearest-neighbour agreement) | Real and AI images separate clearly (96% / 94% agreement, chance 35% / 65%) |
-| Own test | 62 files we made with ChatGPT, Gemini and Grok (originals, screenshots, WhatsApp copies) | **57 of 62** called AI-generated; every original identified, most by its Content Credentials |
+| Own test | 62 files we made with ChatGPT, Gemini and Grok (originals, screenshots, WhatsApp copies) | **57 of 62** called AI-generated (56 of 62 from pixels alone); every original identified, most by its Content Credentials |
 
 The website also checks signed **Content Credentials (C2PA)**, which ChatGPT and Gemini attach to their images. A valid record decides the verdict; otherwise the pixel detector does, and scores between 40% and 60% are reported as uncertain. All numbers above are our own measurements; details are in the report.
 
@@ -119,7 +119,7 @@ tectonic thesis.tex
 | bitmind/nano-banana | MIT | E10 (features only) |
 | C2PA trust list | CC BY 4.0 | website |
 
-No dataset images are redistributed here; the sample images on the website were generated or photographed by us. The project is for academic, non-commercial use.
+Apart from a few small examples in the figures of the report, no dataset images are redistributed here; the sample images on the website were generated or photographed by us. The project is for academic, non-commercial use.
 
 ## Licence
 
